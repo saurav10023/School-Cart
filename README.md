@@ -3,7 +3,7 @@
 School Cart is a full-stack e-commerce platform designed to simplify the purchase of school essentials such as uniforms, socks, and bags. The platform enables parents to order school products online and receive them through home delivery while providing sellers with inventory, order, and customer management capabilities.
 
 ## Features
-
+liquid glass
 ### Authentication & Security
 
 * JWT-based authentication
