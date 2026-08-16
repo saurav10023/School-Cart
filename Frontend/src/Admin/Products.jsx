@@ -8,15 +8,9 @@ import ProductModal from "./ProductModal";
 import StockModal from "./StockModal";
 import ConfirmModal from "./ConfirmModal ";
 
-// Fixed inventory-alert rules (no per-product configuration):
-// a size is "critically low" below this count...
 const SIZE_LOW_THRESHOLD = 3;
-// ...and a product is flagged "low stock" overall if its sizes add up to
-// fewer than this many units, even if no single size is critically low.
 const TOTAL_LOW_THRESHOLD = 5;
 
-// Classifies a product's inventory status using the rules above.
-// Returns per-size flags too, so the table can highlight individual rows.
 const getStockStatus = (product) => {
   const sizes = product.sizes || [];
   const withStock = sizes.map(s => ({ ...s, stockNum: Number(s.stock) || 0 }));
@@ -40,8 +34,8 @@ const ProductCard = ({ product, expanded, onToggle, onEdit, onStock, onToggleAva
   return (
     <div
       id={`product-${product._id}`}
-      className={`bg-white border border-gray-100 rounded-2xl shadow-sm transition-all duration-200 ${
-        expanded ? "col-span-full ring-1 ring-blue-100" : ""
+      className={`glass-card rounded-2xl transition-all duration-200 ${
+        expanded ? "col-span-full glass-card--expanded" : ""
       }`}
     >
       {/* Collapsed header — always visible, click to expand/collapse */}
@@ -49,7 +43,7 @@ const ProductCard = ({ product, expanded, onToggle, onEdit, onStock, onToggleAva
         onClick={onToggle}
         className="w-full flex items-center gap-3 p-3 sm:p-4 text-left"
       >
-        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-white/60 shrink-0 border border-white/70">
           {product.images?.[0] ? (
             <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -92,20 +86,20 @@ const ProductCard = ({ product, expanded, onToggle, onEdit, onStock, onToggleAva
 
       {/* Expanded details */}
       {expanded && (
-        <div className="px-3 sm:px-4 pb-4 space-y-4 border-t border-gray-50 pt-4">
+        <div className="px-3 sm:px-4 pb-4 space-y-4 border-t border-white/50 pt-4">
 
           {/* Images */}
           {product.images?.length > 0 && (
             <div className="flex gap-2 flex-wrap">
               {product.images.map((img, i) => (
-                <img key={i} src={img} alt="" className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-gray-100" />
+                <img key={i} src={img} alt="" className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-white/70" />
               ))}
             </div>
           )}
 
           {/* Category + description */}
           <div className="space-y-1">
-            <span className="inline-block text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-wide">
+            <span className="inline-block text-[11px] font-bold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded-full uppercase tracking-wide">
               {product.category}
             </span>
             {product.description && (
@@ -115,13 +109,13 @@ const ProductCard = ({ product, expanded, onToggle, onEdit, onStock, onToggleAva
 
           {/* Size / price / stock breakdown */}
           {product.sizes?.length > 0 && (
-            <div className="border border-gray-100 rounded-xl overflow-hidden">
-              <div className="grid grid-cols-3 bg-gray-50 text-[11px] font-bold text-gray-500 uppercase tracking-wide px-3 py-2">
+            <div className="glass-inset-panel rounded-xl overflow-hidden">
+              <div className="grid grid-cols-3 bg-white/40 text-[11px] font-bold text-gray-500 uppercase tracking-wide px-3 py-2">
                 <span>Size</span>
                 <span>Price</span>
                 <span>Stock</span>
               </div>
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-white/50">
                 {status.sizes.map((s, i) => {
                   const isOut = s.stockNum === 0;
                   const isLow = !isOut && s.stockNum < SIZE_LOW_THRESHOLD;
@@ -142,15 +136,15 @@ const ProductCard = ({ product, expanded, onToggle, onEdit, onStock, onToggleAva
           {/* Actions */}
           <div className="flex gap-2 flex-wrap pt-1">
             <button onClick={(e) => { e.stopPropagation(); onEdit(product); }}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-all font-medium">
+              className="flex items-center gap-1 text-xs px-3 py-1.5 border border-gray-200/80 bg-white/50 rounded-lg hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-all font-medium">
               <Pencil size={11} /> Edit
             </button>
             <button onClick={(e) => { e.stopPropagation(); onStock(product); }}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 transition-all font-medium">
+              className="flex items-center gap-1 text-xs px-3 py-1.5 border border-gray-200/80 bg-white/50 rounded-lg hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 transition-all font-medium">
               <RefreshCw size={11} /> Stock
             </button>
             <button onClick={(e) => { e.stopPropagation(); onToggleAvailability(product); }}
-              className={`flex items-center gap-1 text-xs px-3 py-1.5 border rounded-lg transition-all font-medium
+              className={`flex items-center gap-1 text-xs px-3 py-1.5 border rounded-lg transition-all font-medium bg-white/50
                 ${product.isAvailable
                   ? "border-orange-200 text-orange-600 hover:bg-orange-50"
                   : "border-green-200 text-green-600 hover:bg-green-50"}`}>
@@ -158,7 +152,7 @@ const ProductCard = ({ product, expanded, onToggle, onEdit, onStock, onToggleAva
               {product.isAvailable ? "Hide" : "Show"}
             </button>
             <button onClick={(e) => { e.stopPropagation(); onDelete(product._id); }}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-all font-medium">
+              className="flex items-center gap-1 text-xs px-3 py-1.5 border border-red-200 bg-white/50 text-red-500 rounded-lg hover:bg-red-50 transition-all font-medium">
               <Trash2 size={11} /> Delete
             </button>
           </div>
@@ -216,7 +210,6 @@ const Products = ({ showToast }) => {
     });
   };
 
-  // Group products by category, preserving alphabetical order
   const grouped = products.reduce((acc, p) => {
     const cat = p.category?.trim() || "Uncategorized";
     if (!acc[cat]) acc[cat] = [];
@@ -225,9 +218,6 @@ const Products = ({ showToast }) => {
   }, {});
   const categories = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
 
-  // Default to the "Uniform" category being open once products load, since
-  // that's the highest-traffic section — falls back to the first category
-  // if there's no exact match.
   useEffect(() => {
     if (openCategory === null && categories.length > 0) {
       const uniformCat = categories.find(c => c.toLowerCase().includes("uniform"));
@@ -236,7 +226,6 @@ const Products = ({ showToast }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products]);
 
-  // Inventory alerts for the dashboard panel
   const outOfStockProducts = [];
   const lowStockProducts = [];
   products.forEach(p => {
@@ -245,8 +234,6 @@ const Products = ({ showToast }) => {
     else if (status.lowStock) lowStockProducts.push(p);
   });
 
-  // Opens the product's category tab, expands its card, and scrolls to it —
-  // used when clicking an item in the alerts panel
   const jumpToProduct = (product) => {
     setOpenCategory(product.category?.trim() || "Uncategorized");
     setExpandedIds(prev => new Set(prev).add(product._id));
@@ -255,15 +242,19 @@ const Products = ({ showToast }) => {
     }, 50);
   };
 
-  if (loading) return <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-20 bg-gray-100 rounded-2xl animate-pulse" />)}</div>;
+  if (loading) return (
+    <div className="space-y-3" style={{ "--brand": "37,99,235" }}>
+      {[1,2,3].map(i => <div key={i} className="h-20 skeleton-glass rounded-2xl" />)}
+    </div>
+  );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" style={{ "--brand": "37,99,235" /* blue-600 */ }}>
       <div className="flex items-center justify-between">
         <p className="text-xs text-gray-400 font-medium">{products.length} products</p>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm shadow-blue-200"
+          className="glass-shine glass-btn-primary flex items-center gap-1.5 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all"
         >
           <Plus size={15} /> Add Product
         </button>
@@ -273,18 +264,18 @@ const Products = ({ showToast }) => {
       {(outOfStockProducts.length > 0 || lowStockProducts.length > 0) && (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-2xl p-3.5 sm:p-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                <AlertTriangle size={16} className="text-amber-600" />
+            <div className="glass-alert-amber flex items-center gap-3 rounded-2xl p-3.5 sm:p-4">
+              <div className="glass-icon-chip-amber w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0">
+                <AlertTriangle size={16} className="text-amber-700" />
               </div>
               <div className="min-w-0">
                 <p className="text-lg sm:text-xl font-black text-amber-700 leading-none">{lowStockProducts.length}</p>
                 <p className="text-[11px] sm:text-xs text-amber-600 font-semibold mt-0.5">Low stock</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 bg-red-50 border border-red-100 rounded-2xl p-3.5 sm:p-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
-                <PackageX size={16} className="text-red-600" />
+            <div className="glass-alert-red flex items-center gap-3 rounded-2xl p-3.5 sm:p-4">
+              <div className="glass-icon-chip-red w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0">
+                <PackageX size={16} className="text-red-700" />
               </div>
               <div className="min-w-0">
                 <p className="text-lg sm:text-xl font-black text-red-700 leading-none">{outOfStockProducts.length}</p>
@@ -293,16 +284,16 @@ const Products = ({ showToast }) => {
             </div>
           </div>
 
-          <div className="border border-gray-100 rounded-2xl divide-y divide-gray-50 max-h-56 overflow-y-auto">
+          <div className="glass-card rounded-2xl divide-y divide-white/50 max-h-56 overflow-y-auto">
             {[...outOfStockProducts, ...lowStockProducts].map(product => {
               const status = getStockStatus(product);
               return (
                 <button
                   key={product._id}
                   onClick={() => jumpToProduct(product)}
-                  className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left hover:bg-white/50 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/60 border border-white/70 shrink-0">
                     {product.images?.[0] ? (
                       <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -323,8 +314,8 @@ const Products = ({ showToast }) => {
       )}
 
       {products.length === 0 ? (
-        <div className="flex flex-col items-center py-16 gap-2">
-          <Package size={32} className="text-gray-200" />
+        <div className="glass-card flex flex-col items-center py-16 gap-2 rounded-2xl">
+          <Package size={32} className="text-gray-300" />
           <p className="text-gray-400 text-sm">No products yet</p>
         </div>
       ) : (
@@ -337,13 +328,13 @@ const Products = ({ showToast }) => {
                 <button
                   key={category}
                   onClick={() => setOpenCategory(category)}
-                  className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-colors
+                  className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all
                     ${isActive
-                      ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                      ? "glass-shine glass-btn-primary text-white"
+                      : "glass-chip-idle text-gray-500 hover:text-gray-700"}`}
                 >
                   {category}
-                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? "bg-white/20" : "bg-white text-gray-400"}`}>
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? "bg-white/25" : "bg-white/70 text-gray-400"}`}>
                     {grouped[category].length}
                   </span>
                 </button>
@@ -375,6 +366,84 @@ const Products = ({ showToast }) => {
       {editProduct && <ProductModal product={editProduct} onClose={() => setEditProduct(null)} onSave={fetchProducts} showToast={showToast} />}
       {stockProduct && <StockModal product={stockProduct} onClose={() => setStockProduct(null)} onSave={fetchProducts} showToast={showToast} />}
       {confirm && <ConfirmModal message="Delete this product? This cannot be undone." onConfirm={() => handleDelete(confirm)} onCancel={() => setConfirm(null)} />}
+
+      <style>{`
+        .glass-card {
+          background: rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,0.8);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          box-shadow: 0 8px 22px -16px rgba(var(--brand),0.28),
+                      inset 0 1px 0 rgba(255,255,255,0.85);
+        }
+        .glass-card--expanded {
+          box-shadow: 0 0 0 1px rgba(var(--brand),0.2), 0 16px 32px -18px rgba(var(--brand),0.35);
+        }
+        .glass-inset-panel {
+          background: rgba(255,255,255,0.4);
+          border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .glass-btn-primary {
+          background: linear-gradient(135deg, rgba(var(--brand),0.95), rgba(29,78,216,0.95));
+          border: 1px solid rgba(255,255,255,0.3);
+          box-shadow: 0 10px 22px -12px rgba(var(--brand),0.5);
+        }
+        .glass-btn-primary:hover { box-shadow: 0 14px 26px -12px rgba(var(--brand),0.6); }
+
+        .glass-chip-idle {
+          background: rgba(255,255,255,0.5);
+          border: 1px solid rgba(255,255,255,0.75);
+        }
+        .glass-chip-idle:hover { background: rgba(255,255,255,0.75); }
+
+        .glass-shine { position: relative; overflow: hidden; isolation: isolate; }
+        .glass-shine::after {
+          content: ""; position: absolute; top: 0; left: -60%;
+          width: 40%; height: 100%;
+          background: linear-gradient(115deg, transparent, rgba(255,255,255,0.5), transparent);
+          transform: skewX(-18deg);
+          transition: left 0.75s ease;
+          pointer-events: none;
+        }
+        .glass-shine:hover::after { left: 130%; }
+
+        .glass-alert-amber {
+          background: rgba(255,251,235,0.7);
+          border: 1px solid rgba(252,211,77,0.5);
+          backdrop-filter: blur(10px);
+        }
+        .glass-alert-red {
+          background: rgba(254,242,242,0.7);
+          border: 1px solid rgba(252,165,165,0.5);
+          backdrop-filter: blur(10px);
+        }
+        .glass-icon-chip-amber {
+          background: linear-gradient(150deg, rgba(252,211,77,0.5), rgba(252,211,77,0.25));
+          border: 1px solid rgba(255,255,255,0.6);
+        }
+        .glass-icon-chip-red {
+          background: linear-gradient(150deg, rgba(252,165,165,0.5), rgba(252,165,165,0.25));
+          border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .skeleton-glass {
+          background: rgba(255,255,255,0.45);
+          border: 1px solid rgba(255,255,255,0.6);
+          position: relative;
+          overflow: hidden;
+        }
+        .skeleton-glass::after {
+          content: "";
+          position: absolute; inset: 0;
+          background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent);
+          animation: shimmer 1.4s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Package, MapPin, Phone, CreditCard,
@@ -26,32 +26,161 @@ const PAYMENT_STATUS_STYLES = {
   refund_initiated: "bg-orange-100 text-orange-700",
 };
 
+/* ─────────────────────────────────────────────────────────
+   Liquid Glass tokens — same recipe/brand blue as Profile.jsx
+   and Products.jsx. Move to a shared stylesheet if you haven't
+   already, so it isn't duplicated per file.
+   ───────────────────────────────────────────────────────── */
+const GlassStyles = () => (
+  <style>{`
+    .lg-root { --brand: 37, 99, 235; --brand-2: 59, 130, 246; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    .lg-display { font-family: 'Fredoka', 'Plus Jakarta Sans', system-ui, sans-serif; }
+
+    .lg-blobs { position: fixed; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+    .lg-blob { position: absolute; border-radius: 9999px; filter: blur(64px); opacity: 0.3; will-change: transform; }
+    .lg-blob-1 { width: 460px; height: 460px; top: -160px; left: -140px;
+      background: radial-gradient(circle, rgba(var(--brand),0.55), transparent 70%);
+      animation: lg-drift-1 16s ease-in-out infinite; }
+    .lg-blob-2 { width: 400px; height: 400px; top: 35%; right: -140px;
+      background: radial-gradient(circle, rgba(var(--brand-2),0.5), transparent 70%);
+      animation: lg-drift-2 14s ease-in-out infinite; }
+    .lg-blob-3 { width: 340px; height: 340px; bottom: -140px; left: 15%;
+      background: radial-gradient(circle, rgba(var(--brand),0.35), transparent 70%);
+      animation: lg-drift-3 17s ease-in-out infinite; }
+    @keyframes lg-drift-1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,30px) scale(1.08); } }
+    @keyframes lg-drift-2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-30px,-35px) scale(1.1); } }
+    @keyframes lg-drift-3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-25px,25px) scale(0.94); } }
+
+    .glass-card {
+      background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.75);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 10px 26px -14px rgba(var(--brand),0.3), inset 0 1px 0 rgba(255,255,255,0.85);
+    }
+    .glass-tile {
+      background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    .glass-pill {
+      display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px;
+      font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+      background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 8px 20px -10px rgba(var(--brand),0.35), inset 0 1px 0 rgba(255,255,255,0.9);
+      color: rgb(30,64,175);
+    }
+    .glass-dot { width: 6px; height: 6px; border-radius: 999px; background: rgb(var(--brand)); box-shadow: 0 0 8px rgba(var(--brand),0.8); }
+
+    .glass-icon-chip {
+      background: linear-gradient(150deg, rgba(var(--brand),0.20), rgba(var(--brand-2),0.08));
+      border: 1px solid rgba(255,255,255,0.75);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 6px 14px -8px rgba(var(--brand),0.35);
+    }
+
+    .glass-shine { position: relative; overflow: hidden; isolation: isolate; }
+    .glass-shine::after {
+      content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+      background: linear-gradient(115deg, transparent, rgba(255,255,255,0.65), transparent);
+      transform: skewX(-18deg); transition: left 0.75s ease; pointer-events: none;
+    }
+    .glass-shine:hover::after { left: 130%; }
+
+    .glass-btn-primary {
+      background: linear-gradient(135deg, rgba(var(--brand),0.92), rgba(var(--brand-2),0.92));
+      border: 1px solid rgba(255,255,255,0.4); color: white;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px -10px rgba(var(--brand),0.55), inset 0 1px 0 rgba(255,255,255,0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .glass-btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
+    .glass-btn-secondary {
+      background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .glass-btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.8); transform: translateY(-1px); }
+    .glass-btn-danger {
+      background: rgba(254,242,242,0.75); border: 1px solid rgba(252,165,165,0.7);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .glass-btn-danger:hover:not(:disabled) { background: rgba(254,226,226,0.9); transform: translateY(-1px); }
+
+    .glass-btn-danger-solid {
+      background: linear-gradient(135deg, rgba(239,68,68,0.92), rgba(220,38,38,0.92));
+      border: 1px solid rgba(255,255,255,0.4); color: white;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px -10px rgba(220,38,38,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+      transition: transform 0.2s ease;
+    }
+    .glass-btn-danger-solid:hover:not(:disabled) { transform: translateY(-1px); }
+
+    .lg-reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .lg-reveal.lg-in-view { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lg-blob, .lg-reveal { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
+    }
+  `}</style>
+);
+
+function Reveal({ children, delay = 0, className = "" }) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setInView(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className={`lg-reveal ${inView ? "lg-in-view" : ""} ${className}`}
+      style={{ transitionDelay: inView ? `${delay}ms` : "0ms" }}>
+      {children}
+    </div>
+  );
+}
+
 // Small reusable confirm dialog — used for both Cancel and Delete so the
 // two destructive actions look and behave consistently.
-const ConfirmDialog = ({ icon, title, message, confirmLabel, confirmColor, onConfirm, onCancel, loading }) => (
-  <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center px-4 py-4">
-    <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-sm w-full shadow-2xl space-y-4">
+const ConfirmDialog = ({ icon, title, message, confirmLabel, confirmColorClass, onConfirm, onCancel, loading }) => (
+  <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center px-4 py-4">
+    <div className="glass-card rounded-2xl p-5 sm:p-6 max-w-sm w-full space-y-4 !bg-white/85">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
+        <div className="glass-icon-chip w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-black text-gray-900">{title}</p>
-          <p className="text-xs text-gray-400">{message}</p>
+          <p className="text-sm font-bold text-gray-900">{title}</p>
+          <p className="text-xs text-gray-500">{message}</p>
         </div>
       </div>
       <div className="flex gap-3">
         <button
           onClick={onCancel}
           disabled={loading}
-          className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          className="glass-btn-secondary flex-1 py-2.5 rounded-xl text-sm font-semibold text-gray-600 disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           onClick={onConfirm}
           disabled={loading}
-          className={`flex-1 py-2.5 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 ${confirmColor}`}
+          className={`glass-shine flex-1 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-1.5 ${confirmColorClass}`}
         >
           {loading && <Loader2 size={14} className="animate-spin" />}
           {confirmLabel}
@@ -209,12 +338,14 @@ export default function OrderDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-6 sm:py-8 px-4">
-        <div className="max-w-3xl mx-auto space-y-4 animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-32" />
-          <div className="h-24 bg-white rounded-2xl border border-gray-100" />
-          <div className="h-40 bg-white rounded-2xl border border-gray-100" />
-          <div className="h-48 bg-white rounded-2xl border border-gray-100" />
+      <div className="lg-root min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-indigo-50 py-6 sm:py-8 px-4 relative overflow-hidden">
+        <GlassStyles />
+        <div className="lg-blobs"><div className="lg-blob lg-blob-1" /><div className="lg-blob lg-blob-2" /></div>
+        <div className="max-w-3xl mx-auto space-y-4 animate-pulse relative z-10">
+          <div className="h-8 glass-tile rounded-lg w-32" />
+          <div className="h-24 glass-card rounded-2xl" />
+          <div className="h-40 glass-card rounded-2xl" />
+          <div className="h-48 glass-card rounded-2xl" />
         </div>
       </div>
     );
@@ -222,13 +353,17 @@ export default function OrderDetail() {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 px-4 text-center">
-        <AlertCircle size={40} className="text-red-400" />
-        <p className="text-gray-500 text-base">{error || "Order not found"}</p>
-        <button onClick={() => navigate("/profile")}
-          className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors">
-          Back to Profile
-        </button>
+      <div className="lg-root min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-indigo-50 flex flex-col items-center justify-center gap-4 px-4 text-center relative overflow-hidden">
+        <GlassStyles />
+        <div className="lg-blobs"><div className="lg-blob lg-blob-1" /><div className="lg-blob lg-blob-2" /></div>
+        <div className="glass-card relative z-10 flex flex-col items-center gap-4 px-10 py-12 rounded-3xl">
+          <AlertCircle size={40} className="text-red-400" />
+          <p className="text-gray-600 text-base">{error || "Order not found"}</p>
+          <button onClick={() => navigate("/profile")}
+            className="glass-shine glass-btn-primary px-4 py-2 text-sm font-semibold rounded-xl">
+            Back to Profile
+          </button>
+        </div>
       </div>
     );
   }
@@ -236,261 +371,307 @@ export default function OrderDetail() {
   const status = STATUS_STYLES[order.orderStatus] || STATUS_STYLES.placed;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 sm:py-8 px-4">
-      <div className="max-w-3xl mx-auto space-y-5">
+    <div className="lg-root min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-indigo-50 py-6 sm:py-8 px-4 relative overflow-hidden">
+      <GlassStyles />
+      <div className="lg-blobs">
+        <div className="lg-blob lg-blob-1" />
+        <div className="lg-blob lg-blob-2" />
+        <div className="lg-blob lg-blob-3" />
+      </div>
+
+      <div className="max-w-3xl mx-auto space-y-5 relative z-10">
 
         <button onClick={() => navigate("/profile")}
-          className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-blue-600 transition-colors">
+          className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-blue-700 transition-colors">
           <ArrowLeft size={16} /> Back to Profile
         </button>
 
         {/* Header */}
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div className="space-y-1 min-w-0">
-              <p className="text-xs text-gray-400 font-medium uppercase tracking-widest">Order</p>
-              <h1 className="text-lg sm:text-xl font-black text-gray-900 break-all">
-                #{order.orderNumber || order._id.slice(-6).toUpperCase()}
-              </h1>
-              <p className="text-xs text-gray-400">
-                Placed on {new Date(order.createdAt).toLocaleDateString("en-IN", {
-                  day: "numeric", month: "long", year: "numeric"
-                })}
-              </p>
+        <Reveal>
+          <div className="glass-card rounded-2xl p-4 sm:p-5">
+            <div className="glass-pill mb-3">
+              <span className="glass-dot" />
+              Order
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${status.color}`}>
-                {status.icon} {status.label}
-              </span>
-              <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${PAYMENT_STATUS_STYLES[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
-                {order.paymentStatus}
-              </span>
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div className="space-y-1 min-w-0">
+                <h1 className="lg-display text-lg sm:text-xl font-semibold text-gray-900 break-all">
+                  #{order.orderNumber || order._id.slice(-6).toUpperCase()}
+                </h1>
+                <p className="text-xs text-gray-500">
+                  Placed on {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                    day: "numeric", month: "long", year: "numeric"
+                  })}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${status.color}`}>
+                  {status.icon} {status.label}
+                </span>
+                <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${PAYMENT_STATUS_STYLES[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
+                  {order.paymentStatus}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* Feedback messages */}
         {cancelError && (
-          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+          <div className="glass-card flex items-center gap-2 text-red-600 px-4 py-3 rounded-xl text-sm">
             <AlertCircle size={15} className="shrink-0" /> {cancelError}
           </div>
         )}
         {cancelSuccess && (
-          <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">
+          <div className="glass-card flex items-center gap-2 text-green-700 px-4 py-3 rounded-xl text-sm">
             <CheckCircle size={15} className="shrink-0" /> {cancelSuccess}
           </div>
         )}
         {paymentError && (
-          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+          <div className="glass-card flex items-center gap-2 text-red-600 px-4 py-3 rounded-xl text-sm">
             <AlertCircle size={15} className="shrink-0" /> {paymentError}
           </div>
         )}
         {deleteError && (
-          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+          <div className="glass-card flex items-center gap-2 text-red-600 px-4 py-3 rounded-xl text-sm">
             <AlertCircle size={15} className="shrink-0" /> {deleteError}
           </div>
         )}
 
         {/* Status Timeline */}
         {!isCancelled && (
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 overflow-x-auto">
-            <h2 className="text-sm font-black text-gray-900 mb-5">Order Progress</h2>
-            <div className="flex items-center justify-between relative min-w-[320px]">
-              <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-200 z-0" />
-              <div
-                className="absolute top-4 left-0 h-0.5 bg-blue-500 z-0 transition-all duration-500"
-                style={{ width: currentStepIndex >= 0 ? `${(currentStepIndex / (STATUS_STEPS.length - 1)) * 100}%` : "0%" }}
-              />
-              {STATUS_STEPS.map((step, i) => {
-                const isDone = i <= currentStepIndex;
-                const isActive = i === currentStepIndex;
-                return (
-                  <div key={step} className="flex flex-col items-center gap-2 z-10">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all
-                      ${isDone ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"}
-                      ${isActive ? "ring-4 ring-blue-100" : ""}`}>
-                      {isDone
-                        ? <CheckCircle size={15} className="text-white" />
-                        : <div className="w-2 h-2 bg-gray-300 rounded-full" />
-                      }
+          <Reveal delay={60}>
+            <div className="glass-card rounded-2xl p-4 sm:p-5 overflow-x-auto">
+              <div className="glass-pill mb-4">
+                <span className="glass-dot" />
+                Progress
+              </div>
+              <div className="flex items-center justify-between relative min-w-[320px]">
+                <div className="absolute top-4 left-0 right-0 h-0.5 bg-white/70 z-0" />
+                <div
+                  className="absolute top-4 left-0 h-0.5 z-0 transition-all duration-500"
+                  style={{
+                    width: currentStepIndex >= 0 ? `${(currentStepIndex / (STATUS_STEPS.length - 1)) * 100}%` : "0%",
+                    background: "linear-gradient(90deg, rgba(37,99,235,0.9), rgba(59,130,246,0.9))"
+                  }}
+                />
+                {STATUS_STEPS.map((step, i) => {
+                  const isDone = i <= currentStepIndex;
+                  const isActive = i === currentStepIndex;
+                  return (
+                    <div key={step} className="flex flex-col items-center gap-2 z-10">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all
+                          ${isDone ? "border-transparent" : "glass-tile !border-white/70"}
+                          ${isActive ? "ring-4 ring-blue-200/60" : ""}`}
+                        style={isDone ? { background: "linear-gradient(135deg, rgba(37,99,235,0.95), rgba(59,130,246,0.95))" } : {}}
+                      >
+                        {isDone
+                          ? <CheckCircle size={15} className="text-white" />
+                          : <div className="w-2 h-2 bg-gray-300 rounded-full" />
+                        }
+                      </div>
+                      <p className={`text-xs font-semibold capitalize text-center ${isDone ? "text-blue-700" : "text-gray-400"}`}>
+                        {step}
+                      </p>
                     </div>
-                    <p className={`text-xs font-semibold capitalize text-center ${isDone ? "text-blue-600" : "text-gray-400"}`}>
-                      {step}
-                    </p>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          </Reveal>
         )}
 
         {/* Cancelled banner */}
         {isCancelled && (
-          <div className="flex items-center gap-3 bg-red-50 border border-red-200 px-4 sm:px-5 py-4 rounded-2xl">
-            <XCircle size={20} className="text-red-500 shrink-0" />
-            <div>
-              <p className="text-sm font-bold text-red-700">Order Cancelled</p>
-              <p className="text-xs text-red-500">This order has been cancelled.</p>
+          <Reveal delay={60}>
+            <div className="glass-card flex items-center gap-3 px-4 sm:px-5 py-4 rounded-2xl !bg-red-50/50">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-white/75"
+                style={{ background: "linear-gradient(150deg, rgba(239,68,68,0.18), rgba(239,68,68,0.06))" }}
+              >
+                <XCircle size={18} className="text-red-500" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-red-700">Order Cancelled</p>
+                <p className="text-xs text-red-500">This order has been cancelled.</p>
+              </div>
             </div>
-          </div>
+          </Reveal>
         )}
 
         {/* Order Items */}
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-4 sm:px-5 py-4 border-b border-gray-100">
-            <Package size={16} className="text-blue-600" />
-            <h2 className="text-sm font-black text-gray-900">Items ({order.orderItems?.length})</h2>
-          </div>
-          <div className="divide-y divide-gray-50">
-            {order.orderItems?.map((item, i) => {
-              const name  = item.product?.name || "Product";
-              const image = item.product?.images?.[0];
-              return (
-                <div key={i} className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4">
-                  <div
-                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0 cursor-pointer"
-                    onClick={() => item.product?._id && navigate(`/products/${item.product._id}`)}
-                  >
-                    {image ? (
-                      <img src={image} alt={name} className="w-full h-full object-cover hover:scale-105 transition-transform" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ShoppingBag size={18} className="text-gray-300" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className="text-sm font-bold text-gray-800 line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors"
+        <Reveal delay={120}>
+          <div className="glass-card rounded-2xl overflow-hidden">
+            <div className="flex items-center gap-2 px-4 sm:px-5 py-4 border-b border-white/60">
+              <div className="glass-icon-chip w-7 h-7 rounded-lg flex items-center justify-center">
+                <Package size={14} className="text-blue-600" />
+              </div>
+              <h2 className="lg-display text-sm font-semibold text-gray-900">Items ({order.orderItems?.length})</h2>
+            </div>
+            <div className="divide-y divide-white/50">
+              {order.orderItems?.map((item, i) => {
+                const name  = item.product?.name || "Product";
+                const image = item.product?.images?.[0];
+                return (
+                  <div key={i} className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4">
+                    <div
+                      className="glass-tile w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shrink-0 cursor-pointer"
                       onClick={() => item.product?._id && navigate(`/products/${item.product._id}`)}
                     >
-                      {name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <span className="text-xs bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-lg">
-                        Size: {item.size}
-                      </span>
-                      <span className="text-xs text-gray-400">× {item.quantity}</span>
+                      {image ? (
+                        <img src={image} alt={name} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ShoppingBag size={18} className="text-blue-300" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="text-sm font-bold text-gray-800 line-clamp-1 cursor-pointer hover:text-blue-700 transition-colors"
+                        onClick={() => item.product?._id && navigate(`/products/${item.product._id}`)}
+                      >
+                        {name}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="glass-tile text-xs text-blue-700 font-semibold px-2 py-0.5 rounded-lg">
+                          Size: {item.size}
+                        </span>
+                        <span className="text-xs text-gray-400">× {item.quantity}</span>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-black text-gray-900">₹{item.price * item.quantity}</p>
+                      <p className="text-xs text-gray-400">₹{item.price} each</p>
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-black text-gray-900">₹{item.price * item.quantity}</p>
-                    <p className="text-xs text-gray-400">₹{item.price} each</p>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            <div className="glass-tile px-4 sm:px-5 py-4 flex justify-between items-center !rounded-none">
+              <span className="text-sm font-bold text-gray-700">Order Total</span>
+              <span className="text-lg font-black text-blue-700">₹{order.totalAmount}</span>
+            </div>
           </div>
-          <div className="px-4 sm:px-5 py-4 border-t border-gray-100 flex justify-between items-center bg-gray-50">
-            <span className="text-sm font-bold text-gray-700">Order Total</span>
-            <span className="text-lg font-black text-blue-600">₹{order.totalAmount}</span>
-          </div>
-        </div>
+        </Reveal>
 
         {/* Delivery + Payment Info */}
         <div className="grid sm:grid-cols-2 gap-4">
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <MapPin size={15} className="text-blue-600" />
-              <h3 className="text-sm font-black text-gray-900">Delivery Address</h3>
+          <Reveal delay={160}>
+            <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-3 h-full">
+              <div className="flex items-center gap-2">
+                <div className="glass-icon-chip w-7 h-7 rounded-lg flex items-center justify-center">
+                  <MapPin size={14} className="text-blue-600" />
+                </div>
+                <h3 className="lg-display text-sm font-semibold text-gray-900">Delivery Address</h3>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-gray-800">{order.deliveryAddress}</p>
+                <p className="text-xs text-gray-500">{order.city}</p>
+                <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                  <Phone size={11} /> {order.phoneNumber}
+                </p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-gray-800">{order.deliveryAddress}</p>
-              <p className="text-xs text-gray-500">{order.city}</p>
-              <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
-                <Phone size={11} /> {order.phoneNumber}
-              </p>
-            </div>
-          </div>
+          </Reveal>
 
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <CreditCard size={15} className="text-blue-600" />
-              <h3 className="text-sm font-black text-gray-900">Payment Info</h3>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400">Method</span>
-                <span className="font-bold text-gray-700 uppercase">{order.paymentMethod}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400">Status</span>
-                <span className={`font-bold px-2 py-0.5 rounded-full text-xs ${PAYMENT_STATUS_STYLES[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
-                  {order.paymentStatus}
-                </span>
-              </div>
-              {order.transactionId && (
-                <div className="flex justify-between text-xs gap-2">
-                  <span className="text-gray-400 shrink-0">Transaction ID</span>
-                  <span className="font-mono text-gray-600 text-xs truncate">{order.transactionId}</span>
+          <Reveal delay={200}>
+            <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-3 h-full">
+              <div className="flex items-center gap-2">
+                <div className="glass-icon-chip w-7 h-7 rounded-lg flex items-center justify-center">
+                  <CreditCard size={14} className="text-blue-600" />
                 </div>
-              )}
-              {order.razorpayPaymentId && (
-                <div className="flex justify-between text-xs gap-2">
-                  <span className="text-gray-400 shrink-0">Payment ID</span>
-                  <span className="font-mono text-gray-600 text-xs truncate">{order.razorpayPaymentId}</span>
+                <h3 className="lg-display text-sm font-semibold text-gray-900">Payment Info</h3>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">Method</span>
+                  <span className="font-bold text-gray-700 uppercase">{order.paymentMethod}</span>
                 </div>
-              )}
-              <div className="flex justify-between text-xs pt-1 border-t border-gray-100">
-                <span className="text-gray-400">Total Paid</span>
-                <span className="font-black text-blue-600">₹{order.totalAmount}</span>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">Status</span>
+                  <span className={`font-bold px-2 py-0.5 rounded-full text-xs ${PAYMENT_STATUS_STYLES[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
+                    {order.paymentStatus}
+                  </span>
+                </div>
+                {order.transactionId && (
+                  <div className="flex justify-between text-xs gap-2">
+                    <span className="text-gray-400 shrink-0">Transaction ID</span>
+                    <span className="font-mono text-gray-600 text-xs truncate">{order.transactionId}</span>
+                  </div>
+                )}
+                {order.razorpayPaymentId && (
+                  <div className="flex justify-between text-xs gap-2">
+                    <span className="text-gray-400 shrink-0">Payment ID</span>
+                    <span className="font-mono text-gray-600 text-xs truncate">{order.razorpayPaymentId}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-xs pt-1 border-t border-white/60">
+                  <span className="text-gray-400">Total Paid</span>
+                  <span className="font-black text-blue-700">₹{order.totalAmount}</span>
+                </div>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
 
         {/* Pay Now card */}
         {canPay && (
-          <div className="bg-white border border-blue-100 rounded-2xl shadow-sm p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                <p className="text-sm font-bold text-gray-800">Complete your payment</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Your order is reserved. Pay ₹{order.totalAmount} to confirm it.
-                </p>
+          <Reveal delay={240}>
+            <div className="glass-card rounded-2xl p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Complete your payment</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Your order is reserved. Pay ₹{order.totalAmount} to confirm it.
+                  </p>
+                </div>
+                <button
+                  onClick={handlePayNow}
+                  disabled={paymentLoading}
+                  className="glass-shine glass-btn-primary flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-50 w-full sm:w-auto justify-center"
+                >
+                  {paymentLoading
+                    ? <Loader2 size={14} className="animate-spin" />
+                    : <CreditCard size={14} />
+                  }
+                  {paymentLoading ? "Loading..." : `Pay ₹${order.totalAmount}`}
+                </button>
               </div>
-              <button
-                onClick={handlePayNow}
-                disabled={paymentLoading}
-                className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-50 w-full sm:w-auto justify-center"
-              >
-                {paymentLoading
-                  ? <Loader2 size={14} className="animate-spin" />
-                  : <CreditCard size={14} />
-                }
-                {paymentLoading ? "Loading..." : `Pay ₹${order.totalAmount}`}
-              </button>
             </div>
-          </div>
+          </Reveal>
         )}
 
         {/* Cancel Order */}
         {canCancel && (
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                <p className="text-sm font-bold text-gray-800">Need to cancel?</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  You can cancel this order as it hasn't been shipped yet.
-                </p>
+          <Reveal delay={240}>
+            <div className="glass-card rounded-2xl p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Need to cancel?</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    You can cancel this order as it hasn't been shipped yet.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowConfirmCancel(true)}
+                  disabled={cancelling}
+                  className="glass-btn-danger flex items-center gap-1.5 px-4 py-2 text-red-600 rounded-xl text-sm font-semibold disabled:opacity-50 w-full sm:w-auto justify-center"
+                >
+                  {cancelling ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
+                  {cancelling ? "Cancelling..." : "Cancel Order"}
+                </button>
               </div>
-              <button
-                onClick={() => setShowConfirmCancel(true)}
-                disabled={cancelling}
-                className="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 w-full sm:w-auto justify-center"
-              >
-                {cancelling ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
-                {cancelling ? "Cancelling..." : "Cancel Order"}
-              </button>
             </div>
-          </div>
+          </Reveal>
         )}
 
         {/* Invoice + Delete row */}
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <button
             onClick={() => generateInvoice(order)}
-            className="flex items-center justify-center gap-1.5 text-xs px-3 py-2 border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition-all font-medium w-full sm:w-auto"
+            className="glass-btn-secondary flex items-center justify-center gap-1.5 text-xs px-3 py-2 text-blue-700 rounded-lg font-medium w-full sm:w-auto"
           >
             <FileDown size={12} />
             Download Invoice
@@ -502,7 +683,7 @@ export default function OrderDetail() {
             <button
               onClick={() => setShowConfirmDelete(true)}
               disabled={deleting}
-              className="flex items-center justify-center gap-1.5 text-xs px-3 py-2 border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-all font-medium disabled:opacity-50 w-full sm:w-auto"
+              className="glass-btn-danger flex items-center justify-center gap-1.5 text-xs px-3 py-2 text-red-600 rounded-lg font-medium disabled:opacity-50 w-full sm:w-auto"
             >
               {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
               {deleting ? "Deleting..." : "Delete Order"}
@@ -517,7 +698,7 @@ export default function OrderDetail() {
             title="Cancel Order?"
             message="This action cannot be undone."
             confirmLabel="Yes, Cancel"
-            confirmColor="bg-red-500 hover:bg-red-600"
+            confirmColorClass="glass-btn-danger-solid"
             onCancel={() => setShowConfirmCancel(false)}
             onConfirm={handleCancelOrder}
             loading={cancelling}
@@ -531,7 +712,7 @@ export default function OrderDetail() {
             title="Permanently Delete Order?"
             message="This will remove the order from your history forever. This cannot be undone."
             confirmLabel="Yes, Delete"
-            confirmColor="bg-red-600 hover:bg-red-700"
+            confirmColorClass="glass-btn-danger-solid"
             onCancel={() => setShowConfirmDelete(false)}
             onConfirm={handleDeleteOrder}
             loading={deleting}

@@ -164,10 +164,10 @@ const SectionLabel = ({ children }) => (
    at a glance, with an optional right-aligned slot
    for filter chips or period labels.
 ───────────────────────────────────────────── */
-const CardHeader = ({ icon: Icon, iconClass = "bg-gray-50 text-gray-500", title, subtitle, right }) => (
-  <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+const CardHeader = ({ icon: Icon, iconClass = "text-gray-500", title, subtitle, right }) => (
+  <div className="flex items-start justify-between gap-3 mb-4 flex-wrap relative">
     <div className="flex items-center gap-2.5 min-w-0">
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${iconClass}`}>
+      <div className={`glass-icon-chip shrink-0 ${iconClass}`}>
         <Icon size={15} />
       </div>
       <div className="min-w-0">
@@ -189,7 +189,7 @@ const CardEmptyState = ({ icon: Icon = BarChart3, label = "Nothing to show yet",
     className="flex flex-col items-center justify-center gap-2 text-center"
     style={{ height }}
   >
-    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center">
+    <div className="w-10 h-10 rounded-xl bg-white/60 border border-white/70 flex items-center justify-center">
       <Icon size={18} className="text-gray-300" />
     </div>
     <p className="text-xs text-gray-400 font-medium max-w-[220px]">{label}</p>
@@ -200,7 +200,7 @@ const CardEmptyState = ({ icon: Icon = BarChart3, label = "Nothing to show yet",
    SKELETON — shown while data is loading
 ───────────────────────────────────────────── */
 const Skeleton = ({ className = "" }) => (
-  <div className={`animate-pulse bg-gray-100 rounded-2xl ${className}`} />
+  <div className={`glass-skeleton rounded-2xl ${className}`} />
 );
 
 const DashboardSkeleton = () => (
@@ -231,10 +231,10 @@ const StockAlertStrip = ({ stockRisk = [], onViewAll }) => {
   return (
     <button
       onClick={onViewAll}
-      className="w-full text-left bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center justify-between gap-3 hover:bg-red-100/70 hover:border-red-200 transition-all"
+      className="glass-notice-red w-full text-left rounded-2xl p-4 flex items-center justify-between gap-3 transition-all"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-9 h-9 shrink-0 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
+        <div className="w-9 h-9 shrink-0 rounded-xl bg-red-100/80 text-red-600 flex items-center justify-center border border-white/60">
           <AlertTriangle size={16} />
         </div>
         <div className="min-w-0">
@@ -257,12 +257,12 @@ const Overview = ({ stats = {}, revenueOverTime = [], stockRisk = [], onViewStoc
   const revenueTrend = revenueOverTime.map((d) => d.revenue);
 
   const cards = [
-    { label: "Total Orders",   value: stats.totalOrders,             icon: ShoppingBag, color: "bg-blue-50 text-blue-600",     stroke: "#2563EB", trend: orderTrend },
-    { label: "Total Products", value: stats.totalProducts,           icon: Package,     color: "bg-purple-50 text-purple-600" },
-    { label: "Total Users",    value: stats.totalUsers,              icon: Users,       color: "bg-green-50 text-green-600" },
-    { label: "Revenue",        value: formatINR(stats.totalRevenue), icon: TrendingUp,  color: "bg-orange-50 text-orange-600", stroke: "#F97316", trend: revenueTrend },
-    { label: "Pending Orders", value: stats.pendingOrders,           icon: Clock,       color: "bg-yellow-50 text-yellow-600" },
-    { label: "Cancelled",      value: stats.cancelledOrders,         icon: Ban,         color: "bg-red-50 text-red-600" },
+    { label: "Total Orders",   value: stats.totalOrders,             icon: ShoppingBag, color: "text-blue-600",     stroke: "#2563EB", trend: orderTrend },
+    { label: "Total Products", value: stats.totalProducts,           icon: Package,     color: "text-purple-600" },
+    { label: "Total Users",    value: stats.totalUsers,              icon: Users,       color: "text-green-600" },
+    { label: "Revenue",        value: formatINR(stats.totalRevenue), icon: TrendingUp,  color: "text-orange-600", stroke: "#F97316", trend: revenueTrend },
+    { label: "Pending Orders", value: stats.pendingOrders,           icon: Clock,       color: "text-yellow-600" },
+    { label: "Cancelled",      value: stats.cancelledOrders,         icon: Ban,         color: "text-red-600" },
   ];
 
   return (
@@ -273,10 +273,10 @@ const Overview = ({ stats = {}, revenueOverTime = [], stockRisk = [], onViewStoc
         {cards.map(({ label, value, icon: Icon, color, stroke, trend }) => (
           <div
             key={label}
-            className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between min-h-[112px]"
+            className="glass-card rounded-2xl p-4 sm:p-5 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between min-h-[112px]"
           >
             <div className="flex items-start justify-between gap-2">
-              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+              <div className={`glass-icon-chip !w-9 !h-9 sm:!w-10 sm:!h-10 shrink-0 ${color}`}>
                 <Icon size={17} />
               </div>
               {trend && trend.length > 1 && <Sparkline values={trend} stroke={stroke} />}
@@ -310,7 +310,7 @@ const AnalyticsSummaryStrip = ({ revenueByCategory = [], stockRisk = [], topCust
     {
       key: "topCategory",
       icon: Package,
-      color: "bg-indigo-50 text-indigo-600",
+      color: "text-indigo-600",
       label: "Top category",
       value: topCategory ? topCategory.category : "—",
       sub: topCategory ? formatINR(topCategory.revenue) : "No sales yet",
@@ -319,7 +319,7 @@ const AnalyticsSummaryStrip = ({ revenueByCategory = [], stockRisk = [], topCust
     {
       key: "itemsAtRisk",
       icon: AlertTriangle,
-      color: itemsAtRisk > 0 ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-400",
+      color: itemsAtRisk > 0 ? "text-red-600" : "text-gray-400",
       label: "Items at risk",
       value: itemsAtRisk,
       sub: itemsAtRisk > 0 ? "Selling out within 14 days" : "Stock looks healthy",
@@ -327,7 +327,7 @@ const AnalyticsSummaryStrip = ({ revenueByCategory = [], stockRisk = [], topCust
     {
       key: "topCustomer",
       icon: Crown,
-      color: "bg-amber-50 text-amber-600",
+      color: "text-amber-600",
       label: "Top customer",
       value: topCustomer ? topCustomer.username : "—",
       sub: topCustomer ? `${topCustomer.orderCount} orders` : "No repeat buyers yet",
@@ -336,7 +336,7 @@ const AnalyticsSummaryStrip = ({ revenueByCategory = [], stockRisk = [], topCust
     {
       key: "totalUnits",
       icon: TrendingUp,
-      color: "bg-green-50 text-green-600",
+      color: "text-green-600",
       label: "Units sold",
       value: totalUnits || "—",
       sub: "Across all categories",
@@ -346,8 +346,8 @@ const AnalyticsSummaryStrip = ({ revenueByCategory = [], stockRisk = [], topCust
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
       {items.map(({ key, icon: Icon, color, label, value, sub, capitalize }) => (
-        <div key={key} className="bg-white border border-gray-100 rounded-2xl p-3.5 sm:p-4 shadow-sm min-w-0">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2.5 ${color}`}>
+        <div key={key} className="glass-card rounded-2xl p-3.5 sm:p-4 min-w-0">
+          <div className={`glass-icon-chip !w-8 !h-8 mb-2.5 ${color}`}>
             <Icon size={15} />
           </div>
           <p className={`text-sm sm:text-base font-black text-gray-900 truncate ${capitalize ? "capitalize" : "tabular-nums"}`}>
@@ -382,16 +382,16 @@ const RevenueTrendCard = ({ data = [] }) => {
   }, [data]);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 shadow-sm">
+    <div className="glass-card rounded-2xl p-4 sm:p-6">
       <CardHeader
         icon={TrendingUp}
-        iconClass="bg-orange-50 text-orange-600"
+        iconClass="text-orange-600"
         title="Revenue trend"
         subtitle={data.length ? `Paid orders over the last ${data.length} days` : "Paid orders over time"}
       />
 
       {/* KPI strip — fixed 3-column grid so it never wraps unevenly on mobile */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4 bg-gray-50/70 rounded-xl px-3 py-3 sm:px-4 mb-5">
+      <div className="glass-inset-panel grid grid-cols-3 gap-2 sm:gap-4 rounded-xl px-3 py-3 sm:px-4 mb-5">
         <div>
           <p className="text-[10px] sm:text-[11px] text-gray-500 font-semibold uppercase tracking-wide">Revenue</p>
           <p className="text-sm sm:text-lg font-black text-gray-900 tabular-nums truncate">{formatINR(totalRevenue)}</p>
@@ -429,7 +429,7 @@ const RevenueTrendCard = ({ data = [] }) => {
             <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={40} />
             <Tooltip
               formatter={(v) => [formatINR(v), "Revenue"]}
-              contentStyle={{ borderRadius: 12, border: "1px solid #F1F5F9", fontSize: 12 }}
+              contentStyle={{ borderRadius: 12, border: "1px solid rgba(255,255,255,0.9)", fontSize: 12, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)" }}
             />
             <Area type="monotone" dataKey="revenue" stroke="#F97316" strokeWidth={2.5} fill="url(#revFill)" />
           </AreaChart>
@@ -443,10 +443,10 @@ const RevenueTrendCard = ({ data = [] }) => {
    REVENUE BY CATEGORY
 ───────────────────────────────────────────── */
 const CategoryRevenueCard = ({ data = [] }) => (
-  <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 shadow-sm">
+  <div className="glass-card rounded-2xl p-4 sm:p-5">
     <CardHeader
       icon={Package}
-      iconClass="bg-indigo-50 text-indigo-600"
+      iconClass="text-indigo-600"
       title="Revenue by category"
       subtitle="Socks · bags · stationery"
     />
@@ -468,7 +468,7 @@ const CategoryRevenueCard = ({ data = [] }) => (
             />
             <Tooltip
               formatter={(v, key) => [key === "revenue" ? formatINR(v) : v, key === "revenue" ? "Revenue" : "Units"]}
-              contentStyle={{ borderRadius: 12, border: "1px solid #F1F5F9", fontSize: 12 }}
+              contentStyle={{ borderRadius: 12, border: "1px solid rgba(255,255,255,0.9)", fontSize: 12, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)" }}
             />
             <Bar dataKey="revenue" radius={[0, 8, 8, 0]} barSize={22}>
               {data.map((d) => (
@@ -480,7 +480,7 @@ const CategoryRevenueCard = ({ data = [] }) => (
 
         {/* Explicit value list below the chart — makes exact numbers legible
             on small screens where bar-end labels would get clipped */}
-        <div className="mt-3 pt-3 border-t border-gray-50 space-y-1.5">
+        <div className="mt-3 pt-3 border-t border-white/50 space-y-1.5">
           {data.map((d) => (
             <div key={d.category} className="flex items-center justify-between text-xs gap-2">
               <span className="flex items-center gap-1.5 text-gray-600 font-medium capitalize truncate">
@@ -516,10 +516,10 @@ const SizeDemandCard = ({ data = [] }) => {
   }, [filtered]);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 shadow-sm">
+    <div className="glass-card rounded-2xl p-4 sm:p-5">
       <CardHeader
         icon={Ruler}
-        iconClass="bg-teal-50 text-teal-600"
+        iconClass="text-teal-600"
         title="Size-wise demand"
         subtitle="Units sold by size"
         right={
@@ -529,9 +529,7 @@ const SizeDemandCard = ({ data = [] }) => {
                 <button
                   key={c}
                   onClick={() => setActive(c)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition-colors ${
-                    active === c ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
-                  }`}
+                  className={`glass-pill-option !py-1 !px-3 capitalize ${active === c ? "glass-pill-option-active" : ""}`}
                 >
                   {c}
                 </button>
@@ -551,7 +549,7 @@ const SizeDemandCard = ({ data = [] }) => {
             <CartesianGrid vertical={false} stroke="#F1F5F9" />
             <XAxis dataKey="size" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={40} />
-            <Tooltip formatter={(v) => [v, "Units sold"]} contentStyle={{ borderRadius: 12, border: "1px solid #F1F5F9", fontSize: 12 }} />
+            <Tooltip formatter={(v) => [v, "Units sold"]} contentStyle={{ borderRadius: 12, border: "1px solid rgba(255,255,255,0.9)", fontSize: 12, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)" }} />
             <Bar dataKey="unitsSold" radius={[8, 8, 0, 0]} fill={active === "all" ? "#6366F1" : categoryColor(active)} barSize={32} />
           </BarChart>
         </ResponsiveContainer>
@@ -571,10 +569,10 @@ const urgency = (days) => {
 };
 
 const StockRiskCard = ({ data = [] }) => (
-  <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 shadow-sm">
+  <div className="glass-card rounded-2xl p-4 sm:p-5">
     <CardHeader
       icon={AlertTriangle}
-      iconClass="bg-red-50 text-red-600"
+      iconClass="text-red-600"
       title="Stock-out risk"
       subtitle="Low stock, ranked by how soon it runs out"
     />
@@ -588,13 +586,13 @@ const StockRiskCard = ({ data = [] }) => (
           return (
             <div
               key={`${item.productId}_${item.size}`}
-              className={`flex items-center justify-between gap-3 border-l-4 ${u.border} bg-gray-50/60 rounded-r-xl pl-3 pr-3 py-2.5`}
+              className={`glass-inset-panel flex items-center justify-between gap-3 border-l-4 ${u.border} rounded-r-xl pl-3 pr-3 py-2.5`}
             >
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-gray-900 truncate">{item.name}</p>
                 <p className="text-xs text-gray-500 font-medium capitalize">{item.category} · size {item.size} · {item.currentStock} left</p>
               </div>
-              <span className={`shrink-0 text-xs font-bold px-2.5 py-1 rounded-full ${u.badge}`}>{u.label}</span>
+              <span className={`glass-badge shrink-0 text-xs font-bold px-2.5 py-1 rounded-full ${u.badge}`}>{u.label}</span>
             </div>
           );
         })}
@@ -607,10 +605,10 @@ const StockRiskCard = ({ data = [] }) => (
    TOP CUSTOMERS
 ───────────────────────────────────────────── */
 const TopCustomersCard = ({ data = [] }) => (
-  <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 shadow-sm">
+  <div className="glass-card rounded-2xl p-4 sm:p-5">
     <CardHeader
       icon={Crown}
-      iconClass="bg-amber-50 text-amber-600"
+      iconClass="text-amber-600"
       title="Top customers"
       subtitle="By order count"
     />
@@ -618,10 +616,10 @@ const TopCustomersCard = ({ data = [] }) => (
     {data.length === 0 ? (
       <CardEmptyState icon={Crown} label="No repeat customers yet" height={160} />
     ) : (
-      <div className="divide-y divide-gray-50">
+      <div className="divide-y divide-white/50">
         {data.slice(0, 6).map((c) => (
           <div key={c.userId} className="flex items-center gap-3 py-2.5">
-            <div className="w-8 h-8 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center shrink-0 border border-white/40">
               {c.username?.[0]?.toUpperCase() || "?"}
             </div>
             <div className="min-w-0 flex-1">
@@ -726,24 +724,32 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto p-3 sm:p-6 space-y-4 sm:space-y-5">
+    <div className="max-w-5xl mx-auto p-3 sm:p-6 space-y-4 sm:space-y-5 relative overflow-x-hidden" style={{ "--brand": "37,99,235" }}>
+
+      {/* Ambient blobs */}
+      <div className="glass-blob absolute -top-24 -left-16 w-72 h-72 rounded-full pointer-events-none -z-10" />
+      <div className="glass-blob glass-blob-2 absolute top-1/3 -right-20 w-72 h-72 rounded-full pointer-events-none -z-10" />
+
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight">Dashboard</h1>
+        <div className="flex items-center gap-2.5">
+          <span className="glass-icon-chip text-blue-700"><BarChart3 size={16} /></span>
+          <h1 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight">Dashboard</h1>
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={load}
             title="Refresh"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            className="glass-icon-btn w-8 h-8 rounded-full flex items-center justify-center text-gray-500 transition-colors"
           >
             <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
           </button>
-          <div className="flex bg-gray-100 rounded-full p-1">
+          <div className="glass-segmented flex p-1 rounded-full">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
                 className={`px-3.5 sm:px-4 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                  tab === t.key ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                  tab === t.key ? "glass-segment-active text-gray-900" : "text-gray-500 hover:text-gray-700"
                 }`}
               >
                 {t.label}
@@ -757,7 +763,7 @@ const Dashboard = () => {
       </div>
 
       {usingDemoData && !loading && (
-        <div className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+        <div className="glass-notice-amber text-xs font-medium text-amber-700 rounded-xl px-3 py-2">
           Showing demo data — couldn't reach the analytics API. Point <code className="font-mono">API_BASE</code> at your backend and refresh.
         </div>
       )}
@@ -774,6 +780,112 @@ const Dashboard = () => {
       ) : (
         <Analytics analytics={analytics} />
       )}
+
+      <style>{`
+        .glass-card {
+          background: rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,0.8);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          box-shadow: 0 10px 24px -16px rgba(var(--brand),0.25), inset 0 1px 0 rgba(255,255,255,0.85);
+        }
+
+        .glass-badge {
+          background: rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,0.7);
+        }
+
+        .glass-icon-chip {
+          width: 32px; height: 32px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          background: linear-gradient(150deg, currentColor 0%, transparent 140%);
+          background-color: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.75);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 6px 14px -8px rgba(15,23,42,0.15);
+        }
+
+        .glass-icon-btn {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.8);
+        }
+        .glass-icon-btn:hover { background: rgba(255,255,255,0.85); }
+
+        .glass-inset-panel {
+          background: rgba(255,255,255,0.45);
+          border: 1px solid rgba(255,255,255,0.65);
+        }
+
+        .glass-segmented {
+          background: rgba(255,255,255,0.4);
+          border: 1px solid rgba(255,255,255,0.6);
+          backdrop-filter: blur(10px);
+        }
+        .glass-segment-active {
+          background: rgba(255,255,255,0.95);
+          box-shadow: 0 4px 10px -4px rgba(15,23,42,0.2);
+        }
+
+        .glass-pill-option {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 8px 16px; border-radius: 999px;
+          font-size: 12px; font-weight: 600;
+          color: rgb(75,85,99);
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.85);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 4px 10px -6px rgba(15,23,42,0.15);
+          transition: all 0.18s ease;
+          white-space: nowrap;
+        }
+        .glass-pill-option:hover {
+          border-color: rgba(var(--brand),0.4);
+          transform: translateY(-1px);
+        }
+        .glass-pill-option-active {
+          color: #fff;
+          background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.8));
+          border-color: rgba(255,255,255,0.4);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 10px 20px -10px rgba(15,23,42,0.4);
+        }
+
+        .glass-notice-red {
+          background: rgba(254,242,242,0.75);
+          border: 1px solid rgba(252,165,165,0.5);
+        }
+        .glass-notice-red:hover { background: rgba(254,226,226,0.85); }
+
+        .glass-notice-amber {
+          background: rgba(255,251,235,0.75);
+          border: 1px solid rgba(252,211,77,0.5);
+        }
+
+        .glass-skeleton {
+          background: linear-gradient(90deg, rgba(255,255,255,0.4) 25%, rgba(255,255,255,0.65) 37%, rgba(255,255,255,0.4) 63%);
+          background-size: 400% 100%;
+          border: 1px solid rgba(255,255,255,0.7);
+          animation: shimmer 1.6s ease-in-out infinite;
+        }
+        @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+        .glass-blob {
+          filter: blur(70px); opacity: 0.14;
+          background: radial-gradient(circle at 40% 30%, rgba(var(--brand),0.5), rgba(var(--brand),0));
+          animation: drift1 17s ease-in-out infinite;
+        }
+        .glass-blob-2 { animation: drift2 14s ease-in-out infinite; opacity: 0.1; }
+        @keyframes drift1 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(-18px, 16px) scale(1.06); }
+        }
+        @keyframes drift2 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(16px, -14px) scale(1.05); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .glass-blob, .glass-blob-2, .glass-skeleton { animation: none !important; }
+        }
+      `}</style>
     </div>
   );
 };

@@ -67,23 +67,30 @@ const UserOrdersModal = ({ user, onClose }) => {
   const toggleExpand = (id) => setExpandedId((prev) => (prev === id ? null : id));
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center">
+    <div
+      className="fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center"
+      style={{ "--brand": "37,99,235" }}
+    >
       <div
-        className="bg-white w-full sm:max-w-2xl sm:rounded-2xl rounded-t-3xl shadow-2xl
-                   max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden"
+        className="glass-modal w-full sm:max-w-2xl sm:rounded-2xl rounded-t-3xl
+                   max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden relative"
       >
+        {/* Ambient blobs inside the modal (subtle, desktop-visible mostly) */}
+        <div className="glass-blob glass-blob--1 absolute -top-16 -right-10 w-56 h-56 rounded-full pointer-events-none" />
+        <div className="glass-blob glass-blob--2 absolute -bottom-20 -left-10 w-56 h-56 rounded-full pointer-events-none" />
+
         {/* Drag handle — mobile only */}
-        <div className="sm:hidden flex justify-center pt-2.5 pb-1">
-          <div className="w-10 h-1 rounded-full bg-gray-200" />
+        <div className="sm:hidden flex justify-center pt-2.5 pb-1 relative">
+          <div className="w-10 h-1 rounded-full bg-gray-300/70" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-100">
+        <div className="relative flex items-center justify-between gap-3 px-5 py-4 border-b border-white/50">
           <div className="flex items-center gap-3 min-w-0">
             <img
               src={user.avatar}
               alt=""
-              className="w-10 h-10 rounded-xl object-cover border border-gray-100 shrink-0"
+              className="w-10 h-10 rounded-xl object-cover border border-white/70 shrink-0"
             />
             <div className="min-w-0">
               <h3 className="text-sm font-black text-gray-900 capitalize truncate">
@@ -96,18 +103,18 @@ const UserOrdersModal = ({ user, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all shrink-0"
+            className="glass-icon-btn p-2 rounded-lg text-gray-500 hover:text-gray-700 transition-all shrink-0"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="relative flex-1 overflow-y-auto px-5 py-4">
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-24 bg-gray-100 rounded-2xl animate-pulse" />
+                <div key={i} className="h-24 skeleton-glass rounded-2xl" />
               ))}
             </div>
           ) : error ? (
@@ -123,7 +130,7 @@ const UserOrdersModal = ({ user, onClose }) => {
             </div>
           ) : orders.length === 0 ? (
             <div className="flex flex-col items-center py-16 gap-2 text-center">
-              <PackageOpen size={30} className="text-gray-200" />
+              <PackageOpen size={30} className="text-gray-300" />
               <p className="text-sm text-gray-400">No orders placed yet</p>
             </div>
           ) : (
@@ -133,7 +140,7 @@ const UserOrdersModal = ({ user, onClose }) => {
                 return (
                   <div
                     key={order._id}
-                    className="border border-gray-100 rounded-2xl overflow-hidden hover:border-gray-200 transition-colors"
+                    className="glass-order-card rounded-2xl overflow-hidden transition-colors"
                   >
                     {/* Summary row — always visible, click to expand */}
                     <button
@@ -170,7 +177,7 @@ const UserOrdersModal = ({ user, onClose }) => {
 
                     {/* Expanded details */}
                     {isOpen && (
-                      <div className="px-4 pb-4 space-y-4 border-t border-gray-50 pt-3">
+                      <div className="px-4 pb-4 space-y-4 border-t border-white/50 pt-3">
 
                         {/* Payment info */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -208,7 +215,7 @@ const UserOrdersModal = ({ user, onClose }) => {
                         </div>
 
                         {/* Delivery info */}
-                        <div className="bg-gray-50 rounded-xl p-3 space-y-1.5">
+                        <div className="glass-inset-panel rounded-xl p-3 space-y-1.5">
                           <div className="flex items-center gap-2 text-xs font-semibold text-gray-600 mb-1">
                             <Truck size={13} /> Delivery Details
                           </div>
@@ -245,16 +252,16 @@ const UserOrdersModal = ({ user, onClose }) => {
                           {order.orderItems?.map((item, idx) => (
                             <div
                               key={idx}
-                              className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-2.5"
+                              className="glass-item-row flex items-center gap-3 rounded-xl p-2.5"
                             >
                               {item.product?.images?.[0] ? (
                                 <img
                                   src={item.product.images[0]}
                                   alt=""
-                                  className="w-10 h-10 rounded-lg object-cover border border-gray-100 shrink-0"
+                                  className="w-10 h-10 rounded-lg object-cover border border-white/70 shrink-0"
                                 />
                               ) : (
-                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                                <div className="w-10 h-10 rounded-lg bg-white/60 flex items-center justify-center shrink-0">
                                   <PackageOpen size={16} className="text-gray-300" />
                                 </div>
                               )}
@@ -283,7 +290,7 @@ const UserOrdersModal = ({ user, onClose }) => {
 
         {/* Pagination footer */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+          <div className="relative flex items-center justify-between px-5 py-3 border-t border-white/50 glass-footer">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1 || loading}
@@ -304,6 +311,81 @@ const UserOrdersModal = ({ user, onClose }) => {
           </div>
         )}
       </div>
+
+      <style>{`
+        .glass-modal {
+          background: rgba(255,255,255,0.85);
+          border: 1px solid rgba(255,255,255,0.9);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          box-shadow: 0 30px 60px -24px rgba(var(--brand),0.4);
+        }
+        .glass-icon-btn {
+          background: rgba(255,255,255,0.5);
+          border: 1px solid rgba(255,255,255,0.75);
+        }
+        .glass-icon-btn:hover { background: rgba(255,255,255,0.85); }
+
+        .glass-order-card {
+          background: rgba(255,255,255,0.5);
+          border: 1px solid rgba(255,255,255,0.7);
+        }
+        .glass-order-card:hover {
+          border-color: rgba(255,255,255,0.9);
+          background: rgba(255,255,255,0.62);
+        }
+
+        .glass-inset-panel {
+          background: rgba(255,255,255,0.45);
+          border: 1px solid rgba(255,255,255,0.6);
+        }
+        .glass-item-row {
+          background: rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,0.75);
+        }
+
+        .glass-footer {
+          background: rgba(255,255,255,0.35);
+        }
+
+        .skeleton-glass {
+          background: rgba(255,255,255,0.45);
+          border: 1px solid rgba(255,255,255,0.6);
+          position: relative;
+          overflow: hidden;
+        }
+        .skeleton-glass::after {
+          content: "";
+          position: absolute; inset: 0;
+          background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent);
+          animation: shimmer 1.4s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(100%); }
+        }
+
+        .glass-blob { filter: blur(50px); opacity: 0.18; pointer-events: none; }
+        .glass-blob--1 {
+          background: radial-gradient(circle at 40% 30%, rgba(var(--brand),0.5), rgba(var(--brand),0));
+          animation: drift1 16s ease-in-out infinite;
+        }
+        .glass-blob--2 {
+          background: radial-gradient(circle at 60% 50%, rgba(var(--brand),0.35), rgba(var(--brand),0));
+          animation: drift2 14s ease-in-out infinite;
+        }
+        @keyframes drift1 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(-16px, 14px) scale(1.06); }
+        }
+        @keyframes drift2 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(14px, -12px) scale(1.05); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .glass-blob--1, .glass-blob--2 { animation: none !important; }
+        }
+      `}</style>
     </div>
   );
 };

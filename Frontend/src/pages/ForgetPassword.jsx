@@ -5,10 +5,8 @@ import API from "../api/axios";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "../firebase";
 
-// Same logo asset used across Navbar / Footer / Login / Invoice
 import logo from "../assets/logo.png";
 
-// ✅ Replace with your actual WhatsApp support number (with country code, no + or spaces)
 const SUPPORT_WHATSAPP = "7004335880";
 
 export default function ForgotPassword() {
@@ -47,7 +45,6 @@ export default function ForgotPassword() {
     window.open(`https://wa.me/${SUPPORT_WHATSAPP}?text=${message}`, "_blank");
   };
 
-  /* ── Step 1: Send OTP via Firebase ── */
   const handleSendOTP = async () => {
     if (!isMobileValid) { setError("Enter a valid 10-digit mobile number"); return; }
     setLoading(true); setError("");
@@ -75,7 +72,6 @@ export default function ForgotPassword() {
     } finally { setLoading(false); }
   };
 
-  /* ── Step 2: Verify OTP & call backend ── */
   const handleVerifyOTP = async () => {
     if (otp.length !== 6) { setError("Enter the 6-digit OTP"); return; }
     setLoading(true); setError("");
@@ -99,7 +95,6 @@ export default function ForgotPassword() {
     } finally { setLoading(false); }
   };
 
-  /* ── Step 3: Reset Password ── */
   const handleResetPassword = async () => {
     if (newPassword.length < 6) { setError("Password must be at least 6 characters"); return; }
     if (newPassword !== confirmPass) { setError("Passwords do not match"); return; }
@@ -138,15 +133,15 @@ export default function ForgotPassword() {
         <div key={s} className="flex items-center gap-1 flex-1">
           <div className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 transition-all
             ${i < stepIndex   ? "bg-blue-600 text-white"
-            : i === stepIndex ? "bg-blue-600 text-white ring-4 ring-blue-100"
-            : "bg-gray-100 text-gray-400"}`}>
+            : i === stepIndex ? "glass-step-active text-blue-700"
+            : "glass-step-idle text-gray-400"}`}>
             {i < stepIndex ? "✓" : i + 1}
           </div>
           <span className={`text-xs font-medium hidden sm:block ${i === stepIndex ? "text-blue-600" : "text-gray-400"}`}>
             {s}
           </span>
           {i < steps.length - 1 && (
-            <div className={`flex-1 h-px mx-1 ${i < stepIndex ? "bg-blue-600" : "bg-gray-100"}`} />
+            <div className={`flex-1 h-px mx-1 ${i < stepIndex ? "bg-blue-600" : "bg-gray-200"}`} />
           )}
         </div>
       ))}
@@ -155,9 +150,9 @@ export default function ForgotPassword() {
 
   /* ── WhatsApp Help Banner ── */
   const WhatsAppHelp = ({ context = "default" }) => (
-    <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-        <MessageCircle size={16} className="text-green-600" />
+    <div className="glass-alert-green flex items-start gap-3 rounded-xl px-4 py-3">
+      <div className="glass-icon-chip-green w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+        <MessageCircle size={16} className="text-white" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold text-green-800">
@@ -177,7 +172,7 @@ export default function ForgotPassword() {
       </div>
       <button
         onClick={openWhatsApp}
-        className="shrink-0 flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+        className="glass-shine shrink-0 flex items-center gap-1.5 glass-btn-green text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
       >
         <MessageCircle size={12} />
         Chat
@@ -186,13 +181,18 @@ export default function ForgotPassword() {
   );
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div
+      className="min-h-screen flex relative overflow-hidden bg-gray-50"
+      style={{ "--brand": "37,99,235" }}
+    >
+      {/* Ambient drifting blobs */}
+      <div className="glass-blob glass-blob--1 absolute -top-32 -right-24 w-[28rem] h-[28rem] rounded-full pointer-events-none" />
+      <div className="glass-blob glass-blob--2 absolute bottom-0 left-1/3 w-96 h-96 rounded-full pointer-events-none" />
 
       <div ref={recaptchaRef} />
 
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-blue-600">
-        {/* Decorative background flourishes */}
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-32 -left-16 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
         <div
@@ -205,9 +205,8 @@ export default function ForgotPassword() {
         />
 
         <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
-          {/* Left panel logo */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center overflow-hidden shrink-0 shadow-md shadow-black/10">
+            <div className="glass-icon-chip-light w-9 h-9 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
               <img src={logo} alt="Skool Box logo" className="w-full h-full object-contain p-1" />
             </div>
             <div className="flex flex-col leading-none">
@@ -225,8 +224,8 @@ export default function ForgotPassword() {
               Verify your mobile number and we'll get you back in.
             </p>
 
-            {/* WhatsApp support callout on left panel */}
-            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 mt-4">
+            {/* WhatsApp support callout — glass strip on brand panel */}
+            <div className="glass-pill-light-strip flex items-center gap-3 rounded-xl px-4 py-3 mt-4">
               <MessageCircle size={18} className="text-green-300 shrink-0" />
               <div>
                 <p className="text-sm font-bold text-white">Need help?</p>
@@ -234,7 +233,7 @@ export default function ForgotPassword() {
               </div>
               <button
                 onClick={openWhatsApp}
-                className="ml-auto shrink-0 bg-green-500 hover:bg-green-400 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                className="glass-shine ml-auto shrink-0 glass-btn-green text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
               >
                 Chat
               </button>
@@ -245,12 +244,12 @@ export default function ForgotPassword() {
       </div>
 
       {/* Right — Form */}
-      <div className="flex-1 flex justify-center items-center px-6 py-12">
-        <div className="w-full max-w-md space-y-6">
+      <div className="flex-1 flex justify-center items-center px-6 py-12 relative z-10">
+        <div className="glass-card w-full max-w-md rounded-2xl p-7 sm:p-8 space-y-6">
 
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+            <div className="glass-icon-chip w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
               <img src={logo} alt="Skool Box logo" className="w-full h-full object-contain p-1 bg-white" />
             </div>
             <div className="flex flex-col leading-none">
@@ -262,8 +261,8 @@ export default function ForgotPassword() {
           {/* Done state */}
           {step === "done" ? (
             <div className="text-center space-y-5 py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle2 size={32} className="text-green-600" />
+              <div className="glass-icon-chip-green w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle2 size={32} className="text-white" />
               </div>
               <div>
                 <h2 className="text-2xl font-black text-gray-900">Password Reset!</h2>
@@ -271,14 +270,18 @@ export default function ForgotPassword() {
               </div>
               <button
                 onClick={() => navigate("/login")}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm shadow-md shadow-blue-200 transition-all"
+                className="glass-shine glass-btn-primary w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-sm transition-all"
               >
                 Go to Login <ArrowRight size={15} />
               </button>
             </div>
           ) : (
             <>
-              <div className="space-y-1">
+              <div className="space-y-2">
+                <span className="glass-pill inline-flex items-center gap-2 text-blue-700">
+                  <span className="glass-dot" />
+                  Reset password
+                </span>
                 <h2 className="text-3xl font-black text-gray-900">Reset Password</h2>
                 <p className="text-gray-500 text-sm">
                   {step === "mobile" && "Enter the mobile number linked to your account"}
@@ -291,7 +294,7 @@ export default function ForgotPassword() {
 
               {/* Error */}
               {error && (
-                <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+                <div className="glass-alert-error flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium">
                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full shrink-0" />
                   {error}
                 </div>
@@ -302,8 +305,8 @@ export default function ForgotPassword() {
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-gray-700">Mobile Number</label>
-                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-                      <span className="px-3 py-3 bg-gray-50 text-sm text-gray-500 border-r border-gray-200 font-medium">+91</span>
+                    <div className="glass-input-wrap flex items-center overflow-hidden rounded-xl">
+                      <span className="px-3 py-3 bg-white/40 text-sm text-gray-500 border-r border-white/60 font-medium">+91</span>
                       <input
                         type="tel"
                         maxLength={10}
@@ -311,7 +314,7 @@ export default function ForgotPassword() {
                         value={mobileNumber}
                         onChange={e => setMobileNumber(e.target.value.replace(/\D/, ""))}
                         onKeyDown={e => e.key === "Enter" && handleSendOTP()}
-                        className="flex-1 px-3 py-3 text-sm outline-none text-gray-800"
+                        className="flex-1 px-3 py-3 text-sm outline-none text-gray-800 bg-transparent"
                       />
                     </div>
                     {mobileNumber && (
@@ -324,14 +327,13 @@ export default function ForgotPassword() {
                   <button
                     onClick={handleSendOTP}
                     disabled={loading || !isMobileValid}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm shadow-md shadow-blue-200 transition-all"
+                    className="glass-shine glass-btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm transition-all"
                   >
                     {loading
                       ? <><Loader2 size={15} className="animate-spin" /> Sending OTP...</>
                       : <>Send OTP <ArrowRight size={15} /></>}
                   </button>
 
-                  {/* WhatsApp help — shown after error or always */}
                   {error && error.includes("account") ? (
                     <WhatsAppHelp context="not-found" />
                   ) : (
@@ -357,7 +359,7 @@ export default function ForgotPassword() {
                       value={otp}
                       onChange={e => setOtp(e.target.value.replace(/\D/, ""))}
                       onKeyDown={e => e.key === "Enter" && handleVerifyOTP()}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-xl focus:outline-none focus:ring-2 focus:ring-blue-500 tracking-[0.5em] text-center font-bold bg-white"
+                      className="glass-input-wrap w-full px-4 py-3 rounded-xl text-xl focus:outline-none tracking-[0.5em] text-center font-bold text-gray-800 bg-transparent"
                     />
                     <p className="text-xs text-gray-400 text-center">
                       OTP sent to +91 {mobileNumber} — expires in 10 minutes
@@ -367,7 +369,7 @@ export default function ForgotPassword() {
                   <button
                     onClick={handleVerifyOTP}
                     disabled={loading || otp.length !== 6}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm shadow-md shadow-blue-200 transition-all"
+                    className="glass-shine glass-btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm transition-all"
                   >
                     {loading
                       ? <><Loader2 size={15} className="animate-spin" /> Verifying...</>
@@ -390,7 +392,6 @@ export default function ForgotPassword() {
                     </button>
                   </div>
 
-                  {/* WhatsApp help for OTP issues */}
                   {error && <WhatsAppHelp context="otp-issue" />}
                 </div>
               )}
@@ -399,7 +400,7 @@ export default function ForgotPassword() {
               {step === "reset" && (
                 <div className="space-y-4">
 
-                  <div className="flex items-center gap-2 px-3 py-2.5 bg-green-50 border border-green-200 rounded-xl">
+                  <div className="glass-alert-success flex items-center gap-2 px-3 py-2.5 rounded-xl">
                     <CheckCircle2 size={15} className="text-green-600 shrink-0" />
                     <span className="text-sm text-green-700 font-semibold">+91 {mobileNumber}</span>
                     <span className="text-xs text-green-500 ml-auto">Verified</span>
@@ -408,18 +409,18 @@ export default function ForgotPassword() {
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-gray-700">New Password</label>
                     <div className="relative">
-                      <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
                       <input
                         type={showPass ? "text" : "password"}
                         placeholder="Min. 6 characters"
                         value={newPassword}
                         onChange={e => setNewPassword(e.target.value)}
-                        className="w-full pl-10 pr-11 py-3 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="glass-input-wrap w-full pl-10 pr-11 py-3 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPass(!showPass)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
                       >
                         {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
@@ -429,21 +430,19 @@ export default function ForgotPassword() {
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-gray-700">Confirm Password</label>
                     <div className="relative">
-                      <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
                       <input
                         type={showConfirm ? "text" : "password"}
                         placeholder="Re-enter new password"
                         value={confirmPass}
                         onChange={e => setConfirmPass(e.target.value)}
-                        className={`w-full pl-10 pr-11 py-3 border rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 bg-white transition-all
-                          ${confirmPass && confirmPass !== newPassword
-                            ? "border-red-300 focus:ring-red-400"
-                            : "border-gray-200 focus:ring-blue-500"}`}
+                        className={`glass-input-wrap w-full pl-10 pr-11 py-3 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent transition-all
+                          ${confirmPass && confirmPass !== newPassword ? "glass-input-error" : ""}`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirm(!showConfirm)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
                       >
                         {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
@@ -459,7 +458,7 @@ export default function ForgotPassword() {
                   <button
                     onClick={handleResetPassword}
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm shadow-md shadow-blue-200 transition-all"
+                    className="glass-shine glass-btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm transition-all"
                   >
                     {loading
                       ? <><Loader2 size={15} className="animate-spin" /> Resetting...</>
@@ -471,6 +470,146 @@ export default function ForgotPassword() {
           )}
         </div>
       </div>
+
+      <style>{`
+        .glass-card {
+          background: rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,0.8);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          box-shadow: 0 20px 44px -20px rgba(var(--brand),0.28),
+                      inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+        .glass-input-wrap {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.8);
+          transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .glass-input-wrap:focus-within {
+          border-color: rgba(var(--brand),0.6);
+          box-shadow: 0 0 0 3px rgba(var(--brand),0.15);
+        }
+        .glass-input-error {
+          border-color: rgba(248,113,113,0.7) !important;
+        }
+        .glass-input-error:focus-within {
+          box-shadow: 0 0 0 3px rgba(248,113,113,0.15) !important;
+        }
+
+        .glass-pill {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 6px 14px; border-radius: 999px;
+          font-weight: 600; font-size: 12px;
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.85);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 8px 18px -10px rgba(var(--brand),0.35),
+                      inset 0 1px 0 rgba(255,255,255,0.9);
+          width: fit-content;
+        }
+        .glass-dot { width:6px; height:6px; border-radius:999px; background: rgb(var(--brand)); }
+
+        .glass-pill-light-strip {
+          background: rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.25);
+          backdrop-filter: blur(10px);
+        }
+
+        .glass-icon-chip {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.8);
+          backdrop-filter: blur(10px);
+        }
+        .glass-icon-chip-light {
+          background: rgba(255,255,255,0.9);
+        }
+        .glass-icon-chip-green {
+          background: linear-gradient(150deg, rgba(34,197,94,0.9), rgba(21,128,61,0.85));
+          border: 1px solid rgba(255,255,255,0.25);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 6px 14px -8px rgba(21,128,61,0.5);
+        }
+
+        .glass-btn-primary {
+          background: linear-gradient(135deg, rgba(var(--brand),0.95), rgba(29,78,216,0.95));
+          border: 1px solid rgba(255,255,255,0.25);
+          box-shadow: 0 12px 26px -12px rgba(var(--brand),0.55),
+                      inset 0 1px 0 rgba(255,255,255,0.25);
+        }
+        .glass-btn-primary:hover:not(:disabled) {
+          box-shadow: 0 16px 30px -12px rgba(var(--brand),0.65),
+                      inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .glass-btn-green {
+          background: linear-gradient(135deg, rgba(34,197,94,0.92), rgba(21,128,61,0.95));
+          border: 1px solid rgba(255,255,255,0.2);
+          box-shadow: 0 8px 18px -10px rgba(21,128,61,0.5),
+                      inset 0 1px 0 rgba(255,255,255,0.25);
+        }
+        .glass-btn-green:hover {
+          box-shadow: 0 12px 22px -10px rgba(21,128,61,0.6),
+                      inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .glass-step-active {
+          background: rgba(255,255,255,0.7);
+          border: 2px solid rgba(var(--brand),0.5);
+          box-shadow: 0 0 0 4px rgba(var(--brand),0.12);
+        }
+        .glass-step-idle {
+          background: rgba(255,255,255,0.5);
+          border: 1px solid rgba(255,255,255,0.7);
+        }
+
+        .glass-alert-error {
+          background: rgba(254,242,242,0.7);
+          border: 1px solid rgba(252,165,165,0.6);
+          backdrop-filter: blur(10px);
+          color: rgb(185,28,28);
+        }
+        .glass-alert-success {
+          background: rgba(240,253,244,0.7);
+          border: 1px solid rgba(134,239,172,0.6);
+          backdrop-filter: blur(10px);
+        }
+        .glass-alert-green {
+          background: rgba(240,253,244,0.65);
+          border: 1px solid rgba(134,239,172,0.5);
+          backdrop-filter: blur(10px);
+        }
+
+        .glass-shine { position: relative; overflow: hidden; isolation: isolate; }
+        .glass-shine::after {
+          content: ""; position: absolute; top: 0; left: -60%;
+          width: 40%; height: 100%;
+          background: linear-gradient(115deg, transparent, rgba(255,255,255,0.55), transparent);
+          transform: skewX(-18deg);
+          transition: left 0.75s ease;
+          pointer-events: none;
+        }
+        .glass-shine:hover::after { left: 130%; }
+
+        .glass-blob { filter: blur(80px); opacity: 0.18; }
+        .glass-blob--1 {
+          background: radial-gradient(circle at 40% 30%, rgba(var(--brand),0.5), rgba(var(--brand),0));
+          animation: drift1 17s ease-in-out infinite;
+        }
+        .glass-blob--2 {
+          background: radial-gradient(circle at 60% 50%, rgba(var(--brand),0.35), rgba(var(--brand),0));
+          animation: drift2 15s ease-in-out infinite;
+        }
+        @keyframes drift1 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(-24px, 20px) scale(1.06); }
+        }
+        @keyframes drift2 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(20px, -18px) scale(1.05); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .glass-blob--1, .glass-blob--2 { animation: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

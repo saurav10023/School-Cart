@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Eye, EyeOff, Phone, User, Lock,
-  ArrowRight, Camera, Loader2, CheckCircle2, MapPin
+  ArrowRight, Camera, Loader2, CheckCircle2, MapPin, Sparkles
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
@@ -10,9 +10,8 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber
 } from "firebase/auth";
-import { auth } from "../firebase"; // your firebase config
+import { auth } from "../firebase";
 
-// Same logo asset used across Navbar / Footer / Login / ForgotPassword / Invoice
 import logo from "../assets/logo.png";
 
 export default function Register() {
@@ -37,7 +36,6 @@ export default function Register() {
 
   useEffect(() => { if (user) navigate("/"); }, [user, navigate]);
 
-  // Clean up recaptcha on unmount
   useEffect(() => {
     return () => {
       if (window.recaptchaVerifier) {
@@ -50,14 +48,12 @@ export default function Register() {
   const stepIndex = { mobile: 0, otp: 1, details: 2 }[step];
   const steps     = ["Mobile", "OTP", "Details"];
 
-  /* ── Step 1: Send OTP via Firebase ── */
   const handleSendOTP = async () => {
     if (!isMobileValid) { setError("Enter a valid 10-digit mobile number"); return; }
     setLoading(true);
     setError("");
 
     try {
-      // Set up recaptcha
       if (!window.recaptchaVerifier) {
         window.recaptchaVerifier = new RecaptchaVerifier(
           auth,
@@ -77,7 +73,6 @@ export default function Register() {
       setStep("otp");
     } catch (err) {
       console.error(err);
-      // Reset recaptcha on failure
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = null;
@@ -86,25 +81,21 @@ export default function Register() {
     } finally { setLoading(false); }
   };
 
-  /* ── Step 2: Verify OTP & call backend verify-mobile ── */
   const handleVerifyOTP = async () => {
     if (otp.length !== 6) { setError("Enter the 6-digit OTP"); return; }
     setLoading(true);
     setError("");
 
     try {
-      // Verify with Firebase
       const result = await confirmationResult.confirm(otp);
       const firebaseToken = await result.user.getIdToken();
 
-      // Tell backend mobile is verified
       await API.post(
         "/api/v1/users/verify-mobile",
         {},
         { headers: { Authorization: `Bearer ${firebaseToken}` } }
       );
 
-      // Store token for registration step
       sessionStorage.setItem("firebaseToken", firebaseToken);
       setStep("details");
     } catch (err) {
@@ -118,7 +109,6 @@ export default function Register() {
     } finally { setLoading(false); }
   };
 
-  /* ── Step 3: Register ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.username || !formData.password) {
@@ -193,15 +183,15 @@ export default function Register() {
         <div key={s} className="flex items-center gap-1 flex-1">
           <div className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 transition-all
             ${i < stepIndex  ? "bg-blue-600 text-white"
-            : i === stepIndex ? "bg-blue-600 text-white ring-4 ring-blue-100"
-            : "bg-gray-100 text-gray-400"}`}>
+            : i === stepIndex ? "glass-step-active text-blue-700"
+            : "glass-step-idle text-gray-400"}`}>
             {i < stepIndex ? "✓" : i + 1}
           </div>
           <span className={`text-xs font-medium hidden sm:block ${i === stepIndex ? "text-blue-600" : "text-gray-400"}`}>
             {s}
           </span>
           {i < steps.length - 1 && (
-            <div className={`flex-1 h-px mx-1 ${i < stepIndex ? "bg-blue-600" : "bg-gray-100"}`} />
+            <div className={`flex-1 h-px mx-1 ${i < stepIndex ? "bg-blue-600" : "bg-gray-200"}`} />
           )}
         </div>
       ))}
@@ -209,14 +199,18 @@ export default function Register() {
   );
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div
+      className="min-h-screen flex relative overflow-hidden bg-gray-50"
+      style={{ "--brand": "37,99,235" }}
+    >
+      {/* Ambient drifting blobs across the whole page */}
+      <div className="glass-blob glass-blob--1 absolute -top-32 -right-24 w-[28rem] h-[28rem] rounded-full pointer-events-none" />
+      <div className="glass-blob glass-blob--2 absolute bottom-0 left-1/3 w-96 h-96 rounded-full pointer-events-none" />
 
-      {/* Invisible recaptcha container */}
       <div ref={recaptchaRef} />
 
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-blue-600">
-        {/* Decorative background flourishes */}
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-32 -left-16 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
         <div
@@ -230,7 +224,7 @@ export default function Register() {
 
         <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center overflow-hidden shrink-0 shadow-md shadow-black/10">
+            <div className="glass-icon-chip-light w-9 h-9 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
               <img src={logo} alt="Skool Box logo" className="w-full h-full object-contain p-1" />
             </div>
             <div className="flex flex-col leading-none">
@@ -239,6 +233,10 @@ export default function Register() {
             </div>
           </div>
           <div className="space-y-4">
+            <span className="glass-pill-light inline-flex items-center gap-2 text-white">
+              <Sparkles size={13} />
+              Join in under a minute
+            </span>
             <h1 className="text-4xl font-black leading-tight">
               Join the Happy Parents Club<br />
               <span className="text-blue-200">happy parents.</span>
@@ -252,12 +250,12 @@ export default function Register() {
       </div>
 
       {/* Right — Form */}
-      <div className="flex-1 flex justify-center items-center px-6 py-12">
-        <div className="w-full max-w-md space-y-6">
+      <div className="flex-1 flex justify-center items-center px-6 py-12 relative z-10">
+        <div className="glass-card w-full max-w-md rounded-2xl p-7 sm:p-8 space-y-6">
 
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+          <div className="lg:hidden flex items-center gap-2 mb-1">
+            <div className="glass-icon-chip w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
               <img src={logo} alt="Skool Box logo" className="w-full h-full object-contain p-1 bg-white" />
             </div>
             <div className="flex flex-col leading-none">
@@ -266,8 +264,12 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="space-y-1">
-            <h2 className="text-3xl font-black text-gray-900">Create account</h2>
+          <div className="space-y-2">
+            <span className="glass-pill inline-flex items-center gap-2 text-blue-700">
+              <span className="glass-dot" />
+              Create account
+            </span>
+            <h2 className="text-3xl font-black text-gray-900">Let's get you set up</h2>
             <p className="text-gray-500 text-sm">
               {step === "mobile"  && "Enter your mobile number to get started"}
               {step === "otp"     && `OTP sent to +91 ${mobileNumber}`}
@@ -279,7 +281,7 @@ export default function Register() {
 
           {/* Error */}
           {error && (
-            <div className="flex flex-col gap-1 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+            <div className="glass-alert-error flex flex-col gap-1 px-4 py-3 rounded-xl text-sm font-medium">
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-red-500 rounded-full shrink-0" />
                 {error}
@@ -300,8 +302,8 @@ export default function Register() {
                 <label className="text-sm font-semibold text-gray-700">
                   Mobile Number <span className="text-red-500">*</span>
                 </label>
-                <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-                  <span className="px-3 py-3 bg-gray-50 text-sm text-gray-500 border-r border-gray-200 font-medium">+91</span>
+                <div className="glass-input-wrap flex items-center overflow-hidden rounded-xl">
+                  <span className="px-3 py-3 bg-white/40 text-sm text-gray-500 border-r border-white/60 font-medium">+91</span>
                   <input
                     type="tel"
                     maxLength={10}
@@ -309,7 +311,7 @@ export default function Register() {
                     value={mobileNumber}
                     onChange={e => setMobileNumber(e.target.value.replace(/\D/, ""))}
                     onKeyDown={e => e.key === "Enter" && handleSendOTP()}
-                    className="flex-1 px-3 py-3 text-sm outline-none text-gray-800"
+                    className="flex-1 px-3 py-3 text-sm outline-none text-gray-800 bg-transparent"
                   />
                 </div>
                 {mobileNumber && (
@@ -321,7 +323,7 @@ export default function Register() {
               <button
                 onClick={handleSendOTP}
                 disabled={loading || !isMobileValid}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm shadow-md shadow-blue-200 transition-all"
+                className="glass-shine glass-btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm transition-all"
               >
                 {loading
                   ? <><Loader2 size={15} className="animate-spin" /> Sending OTP...</>
@@ -346,7 +348,7 @@ export default function Register() {
                   value={otp}
                   onChange={e => setOtp(e.target.value.replace(/\D/, ""))}
                   onKeyDown={e => e.key === "Enter" && handleVerifyOTP()}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-xl focus:outline-none focus:ring-2 focus:ring-blue-500 tracking-[0.5em] text-center font-bold bg-white"
+                  className="glass-input-wrap w-full px-4 py-3 rounded-xl text-xl focus:outline-none tracking-[0.5em] text-center font-bold text-gray-800 bg-transparent"
                 />
                 <p className="text-xs text-gray-400 text-center">
                   OTP sent to +91 {mobileNumber} — expires in 10 minutes
@@ -355,7 +357,7 @@ export default function Register() {
               <button
                 onClick={handleVerifyOTP}
                 disabled={loading || otp.length !== 6}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm shadow-md shadow-blue-200 transition-all"
+                className="glass-shine glass-btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm transition-all"
               >
                 {loading
                   ? <><Loader2 size={15} className="animate-spin" /> Verifying...</>
@@ -383,22 +385,20 @@ export default function Register() {
           {step === "details" && (
             <form onSubmit={handleSubmit} className="space-y-4">
 
-              {/* Verified mobile badge */}
-              <div className="flex items-center gap-2 px-3 py-2.5 bg-green-50 border border-green-200 rounded-xl">
+              <div className="glass-alert-success flex items-center gap-2 px-3 py-2.5 rounded-xl">
                 <CheckCircle2 size={15} className="text-green-600 shrink-0" />
                 <span className="text-sm text-green-700 font-semibold">+91 {mobileNumber}</span>
                 <span className="text-xs text-green-500 ml-auto">Verified</span>
               </div>
 
-              {/* Avatar */}
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 flex items-center justify-center">
+                  <div className="glass-avatar w-16 h-16 rounded-full overflow-hidden flex items-center justify-center">
                     {avatarPreview
                       ? <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                       : <User size={24} className="text-gray-400" />}
                   </div>
-                  <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors shadow-md">
+                  <label className="glass-shine absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors shadow-md">
                     <Camera size={12} className="text-white" />
                     <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                   </label>
@@ -409,64 +409,61 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Username */}
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700">
                   Username <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
                   <input
                     type="text"
                     placeholder="Choose a username"
                     value={formData.username}
                     onChange={e => setFormData({ ...formData, username: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="glass-input-wrap w-full pl-10 pr-4 py-3 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
                     required
                   />
                 </div>
               </div>
 
-              {/* Password */}
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700">
                   Password <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Min. 6 characters"
                     value={formData.password}
                     onChange={e => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full pl-10 pr-11 py-3 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="glass-input-wrap w-full pl-10 pr-11 py-3 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
                     required
                     minLength={6}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
 
-              {/* Address */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <MapPin size={15} className="text-blue-500" />
                   <label className="text-sm font-semibold text-gray-700">Delivery Address</label>
                   <span className="text-xs text-gray-400">(Optional)</span>
                 </div>
-                <div className="space-y-3 bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div className="glass-card-inset space-y-3 rounded-xl p-4">
                   <input
                     type="text"
                     placeholder="House / Flat / Street address"
                     value={address.street}
                     onChange={e => setAddress({ ...address, street: e.target.value })}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="glass-input-wrap w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
                   />
                   <div className="grid grid-cols-2 gap-3">
                     <input
@@ -474,14 +471,14 @@ export default function Register() {
                       placeholder="City"
                       value={address.city}
                       onChange={e => setAddress({ ...address, city: e.target.value })}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="glass-input-wrap w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
                     />
                     <input
                       type="text"
                       placeholder="State"
                       value={address.state}
                       onChange={e => setAddress({ ...address, state: e.target.value })}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="glass-input-wrap w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
                     />
                   </div>
                   <input
@@ -490,7 +487,7 @@ export default function Register() {
                     placeholder="Pincode"
                     value={address.pincode}
                     onChange={e => setAddress({ ...address, pincode: e.target.value.replace(/\D/, "") })}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="glass-input-wrap w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
                   />
                 </div>
               </div>
@@ -498,7 +495,7 @@ export default function Register() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm shadow-md shadow-blue-200 transition-all mt-2"
+                className="glass-shine glass-btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold text-sm transition-all mt-2"
               >
                 {loading
                   ? <><Loader2 size={15} className="animate-spin" /> Creating account...</>
@@ -509,6 +506,134 @@ export default function Register() {
 
         </div>
       </div>
+
+      <style>{`
+        .glass-card {
+          background: rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,0.8);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          box-shadow: 0 20px 44px -20px rgba(var(--brand),0.28),
+                      inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+        .glass-card-inset {
+          background: rgba(255,255,255,0.4);
+          border: 1px solid rgba(255,255,255,0.7);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
+        .glass-input-wrap {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.8);
+          transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .glass-input-wrap:focus-within {
+          border-color: rgba(var(--brand),0.6);
+          box-shadow: 0 0 0 3px rgba(var(--brand),0.15);
+        }
+
+        .glass-pill {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 6px 14px; border-radius: 999px;
+          font-weight: 600; font-size: 12px;
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.85);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 8px 18px -10px rgba(var(--brand),0.35),
+                      inset 0 1px 0 rgba(255,255,255,0.9);
+          width: fit-content;
+        }
+        .glass-dot { width:6px; height:6px; border-radius:999px; background: rgb(var(--brand)); }
+
+        .glass-pill-light {
+          padding: 6px 14px; border-radius: 999px;
+          font-weight: 600; font-size: 12px;
+          background: rgba(255,255,255,0.14);
+          border: 1px solid rgba(255,255,255,0.3);
+          backdrop-filter: blur(10px);
+          width: fit-content;
+        }
+
+        .glass-icon-chip {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.8);
+          backdrop-filter: blur(10px);
+        }
+        .glass-icon-chip-light {
+          background: rgba(255,255,255,0.9);
+        }
+
+        .glass-avatar {
+          background: rgba(255,255,255,0.5);
+          border: 2px solid rgba(255,255,255,0.8);
+          backdrop-filter: blur(8px);
+        }
+
+        .glass-btn-primary {
+          background: linear-gradient(135deg, rgba(var(--brand),0.95), rgba(29,78,216,0.95));
+          border: 1px solid rgba(255,255,255,0.25);
+          box-shadow: 0 12px 26px -12px rgba(var(--brand),0.55),
+                      inset 0 1px 0 rgba(255,255,255,0.25);
+        }
+        .glass-btn-primary:hover:not(:disabled) {
+          box-shadow: 0 16px 30px -12px rgba(var(--brand),0.65),
+                      inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .glass-step-active {
+          background: rgba(255,255,255,0.7);
+          border: 2px solid rgba(var(--brand),0.5);
+          box-shadow: 0 0 0 4px rgba(var(--brand),0.12);
+        }
+        .glass-step-idle {
+          background: rgba(255,255,255,0.5);
+          border: 1px solid rgba(255,255,255,0.7);
+        }
+
+        .glass-alert-error {
+          background: rgba(254,242,242,0.7);
+          border: 1px solid rgba(252,165,165,0.6);
+          backdrop-filter: blur(10px);
+          color: rgb(185,28,28);
+        }
+        .glass-alert-success {
+          background: rgba(240,253,244,0.7);
+          border: 1px solid rgba(134,239,172,0.6);
+          backdrop-filter: blur(10px);
+        }
+
+        .glass-shine { position: relative; overflow: hidden; isolation: isolate; }
+        .glass-shine::after {
+          content: ""; position: absolute; top: 0; left: -60%;
+          width: 40%; height: 100%;
+          background: linear-gradient(115deg, transparent, rgba(255,255,255,0.55), transparent);
+          transform: skewX(-18deg);
+          transition: left 0.75s ease;
+          pointer-events: none;
+        }
+        .glass-shine:hover::after { left: 130%; }
+
+        .glass-blob { filter: blur(80px); opacity: 0.18; }
+        .glass-blob--1 {
+          background: radial-gradient(circle at 40% 30%, rgba(var(--brand),0.5), rgba(var(--brand),0));
+          animation: drift1 17s ease-in-out infinite;
+        }
+        .glass-blob--2 {
+          background: radial-gradient(circle at 60% 50%, rgba(var(--brand),0.35), rgba(var(--brand),0));
+          animation: drift2 15s ease-in-out infinite;
+        }
+        @keyframes drift1 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(-24px, 20px) scale(1.06); }
+        }
+        @keyframes drift2 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(20px, -18px) scale(1.05); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .glass-blob--1, .glass-blob--2 { animation: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

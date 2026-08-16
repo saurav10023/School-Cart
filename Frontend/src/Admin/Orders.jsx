@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   CheckCircle, Clock, Loader2, ShoppingBag, UserCog,
   Phone, MapPin, CalendarDays, Package, IndianRupee, Trash2, Pencil, X,
@@ -30,9 +31,9 @@ const isOrderSettled = (order) => {
 const firstOrderImage = (order) =>
   order.orderItems?.find((it) => it.product?.images?.[0])?.product?.images?.[0] || null;
 
-/* Small pill used in the collapsed row — compact version of the full badges */
+/* Small glass pill used in the collapsed row — compact version of the full badges */
 const Pill = ({ children, className }) => (
-  <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${className}`}>
+  <span className={`glass-badge inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${className}`}>
     {children}
   </span>
 );
@@ -299,23 +300,22 @@ const Orders = ({ showToast }) => {
     return (
       <div
         id={`order-${order._id}`}
-        className={`bg-white border rounded-2xl shadow-sm overflow-hidden transition-all duration-500 h-fit
-        ${isExpanded ? "border-gray-200" : "border-gray-100"}
-        ${isEditing ? "ring-2 ring-amber-200 border-amber-300" : ""}
-        ${highlighted ? "ring-2 ring-blue-400 shadow-lg" : ""}`}
+        className={`glass-card rounded-2xl overflow-hidden transition-all duration-500 h-fit relative
+        ${isEditing ? "glass-card-editing" : ""}
+        ${highlighted ? "glass-card-highlighted" : ""}`}
       >
 
         {/* ── Collapsed summary row — always visible, tap to expand ── */}
         <button
           onClick={onToggleExpand}
-          className="w-full flex items-center gap-3 p-3.5 text-left active:bg-gray-50 transition-colors"
+          className="w-full flex items-center gap-3 p-3.5 text-left active:bg-white/40 transition-colors relative"
         >
-          <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-gray-100">
+          <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/70">
             {thumb ? (
               <img src={thumb} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className={`w-full h-full flex items-center justify-center
-                ${isManual ? "bg-purple-50 text-purple-500" : "bg-blue-50 text-blue-500"}`}>
+              <div className={`w-full h-full flex items-center justify-center glass-icon-chip !w-full !h-full !rounded-xl
+                ${isManual ? "text-purple-600" : "text-blue-600"}`}>
                 {isManual ? <UserCog size={17} /> : <ShoppingBag size={17} />}
               </div>
             )}
@@ -353,12 +353,12 @@ const Orders = ({ showToast }) => {
         {/* ── Expandable detail — CSS-grid accordion, no JS height math ── */}
         <div className={`grid transition-all duration-300 ease-in-out ${isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
           <div className="overflow-hidden">
-            <div className="border-t border-gray-100 p-4 space-y-4">
+            <div className="border-t border-white/50 p-4 space-y-4 relative">
 
               {/* Source + edit toggle + full date */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className={`flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full
-                  ${isManual ? "bg-purple-600 text-white" : "bg-blue-600 text-white"}`}>
+                <span className={`flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full text-white
+                  ${isManual ? "bg-purple-600" : "bg-blue-600"}`}>
                   {isManual ? <UserCog size={11} /> : <ShoppingBag size={11} />}
                   {isManual ? "Admin Created" : "Customer Order"}
                 </span>
@@ -374,8 +374,8 @@ const Orders = ({ showToast }) => {
                       onClick={onToggleEdit}
                       className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full transition-colors
                         ${isEditing
-                          ? "bg-amber-600 text-white"
-                          : "bg-white text-gray-500 border border-gray-200 hover:border-amber-300 hover:text-amber-600"}`}
+                          ? "bg-amber-500 text-white"
+                          : "glass-icon-btn-sm text-gray-500 hover:text-amber-600"}`}
                     >
                       {isEditing ? <X size={11} /> : <Pencil size={11} />}
                       {isEditing ? "Done" : "Edit"}
@@ -385,7 +385,7 @@ const Orders = ({ showToast }) => {
               </div>
 
               {isEditing && (
-                <div className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl text-amber-700 text-xs font-semibold">
+                <div className="glass-notice-amber flex items-center gap-1.5 px-3 py-2 rounded-xl text-amber-700 text-xs font-semibold">
                   <Pencil size={11} className="shrink-0" /> Correcting status or payment here will move this order between Active and Completed automatically.
                 </div>
               )}
@@ -399,7 +399,7 @@ const Orders = ({ showToast }) => {
                   <MapPin size={12} className="shrink-0 mt-0.5 text-gray-400" />
                   <span>{order.deliveryAddress}, {order.city}</span>
                 </p>
-                <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full
+                <span className={`glass-badge inline-block text-xs font-semibold px-2 py-0.5 rounded-full
                   ${order.paymentMethod === "cod" ? "bg-green-50 text-green-600" : "bg-indigo-50 text-indigo-600"}`}>
                   {order.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
                 </span>
@@ -410,10 +410,10 @@ const Orders = ({ showToast }) => {
 
               {/* Items — now with product thumbnails */}
               {order.orderItems?.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-50">
+                <div className="flex flex-wrap gap-2 pt-3 border-t border-white/50">
                   {order.orderItems.map((item, i) => (
-                    <span key={i} className="flex items-center gap-1.5 text-xs bg-gray-50 border border-gray-100 text-gray-600 pl-1 pr-2 py-1 rounded-lg">
-                      <span className="w-5 h-5 rounded-md overflow-hidden shrink-0 bg-gray-200 flex items-center justify-center">
+                    <span key={i} className="glass-inset-panel flex items-center gap-1.5 text-xs text-gray-600 pl-1 pr-2 py-1 rounded-lg">
+                      <span className="w-5 h-5 rounded-md overflow-hidden shrink-0 bg-white/70 flex items-center justify-center">
                         {item.product?.images?.[0] ? (
                           <img src={item.product.images[0]} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -428,14 +428,14 @@ const Orders = ({ showToast }) => {
 
               {/* Order status control */}
               {showControls && (
-                <div className="pt-3 border-t border-gray-50 space-y-2">
+                <div className="pt-3 border-t border-white/50 space-y-2">
                   <span className="text-xs text-gray-400 font-medium">Update status</span>
                   <div className="flex gap-1.5 flex-wrap">
                     {ORDER_STATUSES.filter(s => s !== order.orderStatus).map(s => (
                       <button key={s}
                         onClick={() => handleStatusChange(order._id, s)}
                         disabled={updatingId === order._id}
-                        className="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-all disabled:opacity-50 font-medium capitalize"
+                        className="glass-pill-option !py-1.5 !px-2.5 disabled:opacity-50"
                       >
                         {updatingId === order._id
                           ? <Loader2 size={11} className="animate-spin" />
@@ -447,7 +447,7 @@ const Orders = ({ showToast }) => {
               )}
 
               {/* Payment status control */}
-              <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-50">
+              <div className="flex items-center justify-between gap-2 pt-3 border-t border-white/50">
                 <span className="text-xs text-gray-400 font-medium">Payment</span>
                 {showControls ? (
                   <div className="relative">
@@ -455,7 +455,7 @@ const Orders = ({ showToast }) => {
                       value={order.paymentStatus}
                       disabled={updatingPaymentId === order._id}
                       onChange={(e) => handlePaymentStatusChange(order._id, e.target.value)}
-                      className="text-xs pl-2 pr-6 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700 font-medium appearance-none cursor-pointer hover:border-blue-300 transition-colors disabled:opacity-50"
+                      className="glass-input-wrap-sm text-xs pl-2 pr-6 py-1.5 rounded-lg focus:outline-none bg-transparent text-gray-700 font-medium appearance-none cursor-pointer disabled:opacity-50"
                     >
                       <option value="pending">Pending</option>
                       <option value="paid">Paid</option>
@@ -468,7 +468,7 @@ const Orders = ({ showToast }) => {
                     )}
                   </div>
                 ) : (
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${PAYMENT_COLORS[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
+                  <span className={`glass-badge text-xs font-semibold px-2 py-0.5 rounded-full ${PAYMENT_COLORS[order.paymentStatus] || "bg-gray-100 text-gray-600"}`}>
                     {order.paymentStatus}
                   </span>
                 )}
@@ -476,11 +476,11 @@ const Orders = ({ showToast }) => {
 
               {/* Cancel Order */}
               {showControls && !["cancelled", "shipped", "delivered"].includes(order.orderStatus) && (
-                <div className="pt-3 border-t border-gray-50 flex justify-end">
+                <div className="pt-3 border-t border-white/50 flex justify-end">
                   <button
                     onClick={() => handleCancelOrder(order._id)}
                     disabled={updatingId === order._id}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-semibold shadow-sm"
+                    className="glass-shine glass-btn-danger-soft w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-semibold"
                   >
                     {updatingId === order._id ? (
                       <><Loader2 size={15} className="animate-spin" /> Cancelling...</>
@@ -493,11 +493,11 @@ const Orders = ({ showToast }) => {
 
               {/* Delete Order — settled orders only */}
               {!showControls && canDelete && (
-                <div className="pt-3 border-t border-gray-50 flex justify-end">
+                <div className="pt-3 border-t border-white/50 flex justify-end">
                   <button
                     onClick={() => handleDeleteOrder(order._id)}
                     disabled={deletingId === order._id}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-semibold shadow-sm"
+                    className="glass-shine glass-btn-danger-soft w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-semibold"
                   >
                     {deletingId === order._id ? (
                       <><Loader2 size={15} className="animate-spin" /> Deleting...</>
@@ -516,10 +516,20 @@ const Orders = ({ showToast }) => {
   };
 
   if (loading) return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3" style={{ "--brand": "37,99,235" }}>
       {[1, 2, 3, 4, 5, 6].map(i => (
-        <div key={i} className="h-[72px] bg-gray-100 rounded-2xl animate-pulse" />
+        <div key={i} className="glass-skeleton h-[72px] rounded-2xl" />
       ))}
+      <style>{`
+        .glass-skeleton {
+          background: linear-gradient(90deg, rgba(255,255,255,0.4) 25%, rgba(255,255,255,0.65) 37%, rgba(255,255,255,0.4) 63%);
+          background-size: 400% 100%;
+          border: 1px solid rgba(255,255,255,0.7);
+          animation: shimmer 1.6s ease-in-out infinite;
+        }
+        @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        @media (prefers-reduced-motion: reduce) { .glass-skeleton { animation: none !important; } }
+      `}</style>
     </div>
   );
 
@@ -542,11 +552,15 @@ const Orders = ({ showToast }) => {
   const suggestions = searchQuery.trim() ? searchResults.slice(0, 5) : [];
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="space-y-4 pb-4 relative overflow-x-hidden" style={{ "--brand": "37,99,235" }}>
+
+      {/* Ambient blobs */}
+      <div className="glass-blob absolute -top-24 -left-16 w-72 h-72 rounded-full pointer-events-none -z-10" />
+      <div className="glass-blob glass-blob-2 absolute top-1/2 -right-20 w-72 h-72 rounded-full pointer-events-none -z-10" />
 
       {/* ── Search bar with live image-preview suggestions ── */}
       <div ref={searchBoxRef} className="relative flex gap-2">
-        <div className="flex-1 flex items-center gap-2 bg-white border border-gray-100 focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 rounded-full px-4 py-3 shadow-sm transition-all min-w-0">
+        <div className="glass-input-wrap flex-1 flex items-center gap-2 rounded-full px-4 py-3 min-w-0">
           {searching
             ? <Loader2 size={16} className="text-blue-500 animate-spin shrink-0" />
             : <Search size={16} className="text-gray-400 shrink-0" />}
@@ -568,10 +582,8 @@ const Orders = ({ showToast }) => {
 
         <button
           onClick={() => setShowFilters(true)}
-          className={`relative flex items-center justify-center w-11 h-11 rounded-full border shrink-0 transition-all
-            ${activeFilterCount > 0
-              ? "bg-blue-600 border-blue-600 text-white"
-              : "bg-white border-gray-100 text-gray-500 hover:border-gray-200"}`}
+          className={`relative flex items-center justify-center w-11 h-11 rounded-full shrink-0 transition-all
+            ${activeFilterCount > 0 ? "glass-btn-primary text-white" : "glass-icon-btn text-gray-500"}`}
         >
           <SlidersHorizontal size={16} />
           {activeFilterCount > 0 && (
@@ -583,7 +595,7 @@ const Orders = ({ showToast }) => {
 
         {/* Live suggestion dropdown — mirrors the navbar's product search preview */}
         {suggestOpen && searchQuery.trim() && (
-          <div className="absolute top-full left-0 right-0 sm:right-14 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 max-h-96 overflow-y-auto z-30">
+          <div className="glass-dropdown absolute top-full left-0 right-0 sm:right-14 mt-2 rounded-2xl p-2 max-h-96 overflow-y-auto z-30">
             {searching ? (
               <div className="flex items-center gap-2 px-3 py-4 text-sm text-gray-400">
                 <Loader2 size={15} className="animate-spin" />
@@ -598,9 +610,9 @@ const Orders = ({ showToast }) => {
                     <button
                       key={order._id}
                       onClick={() => jumpToOrder(order._id)}
-                      className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-blue-50 rounded-xl transition-colors text-left"
+                      className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-white/60 rounded-xl transition-colors text-left"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-white/60 overflow-hidden shrink-0 border border-white/70">
                         {thumb ? (
                           <img src={thumb} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -632,7 +644,7 @@ const Orders = ({ showToast }) => {
                 {searchTotal > suggestions.length && (
                   <button
                     onClick={() => setSuggestOpen(false)}
-                    className="w-full text-center text-xs font-semibold text-blue-600 hover:underline py-2.5 mt-1 border-t border-gray-50"
+                    className="w-full text-center text-xs font-semibold text-blue-600 hover:underline py-2.5 mt-1 border-t border-white/50"
                   >
                     See all {searchTotal} results for "{searchQuery.trim()}"
                   </button>
@@ -656,81 +668,96 @@ const Orders = ({ showToast }) => {
         </div>
       )}
 
-      {/* ── Filter bottom sheet ── */}
-      {showFilters && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      {/* ── Filter bottom sheet — portal + max z-index so it always escapes clipping ── */}
+      {showFilters && createPortal(
+        <div className="fixed inset-0 flex items-end sm:items-center justify-center" style={{ "--brand": "37,99,235", zIndex: 2147483000 }}>
           <div
             onClick={() => setShowFilters(false)}
-            className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${filterSheetVisible ? "opacity-100" : "opacity-0"}`}
+            className={`absolute inset-0 bg-gray-900/45 backdrop-blur-sm transition-opacity duration-300 ${filterSheetVisible ? "opacity-100" : "opacity-0"}`}
           />
           <div
-            className={`relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto transition-all duration-300 ease-out
+            className={`glass-modal relative w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto transition-all duration-300 ease-out
               ${filterSheetVisible ? "translate-y-0 opacity-100" : "translate-y-full sm:translate-y-6 opacity-0"}`}
           >
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto sm:hidden" />
+            <div className="glass-blob absolute -top-16 -right-14 w-56 h-56 rounded-full pointer-events-none -z-10" />
+
+            <div className="w-10 h-1 bg-gray-300/70 rounded-full mx-auto sm:hidden" />
 
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-gray-900 flex items-center gap-1.5">
-                <Filter size={14} /> Filter Orders
-              </h3>
-              <button onClick={() => setShowFilters(false)} className="text-gray-400 hover:text-gray-600">
+              <div className="flex items-center gap-2.5">
+                <span className="glass-icon-chip"><Filter size={15} className="text-blue-700" /></span>
+                <h3 className="text-sm font-black text-gray-900">Filter Orders</h3>
+              </div>
+              <button onClick={() => setShowFilters(false)} className="glass-icon-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600">
                 <X size={18} />
               </button>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-gray-600">Order Status</label>
-              <div className="relative">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => handleFilterChange(setStatusFilter)(e.target.value)}
-                  className="w-full appearance-none px-3 py-2.5 pr-8 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 capitalize bg-white"
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleFilterChange(setStatusFilter)("")}
+                  className={`glass-pill-option ${statusFilter === "" ? "glass-pill-option-active" : ""}`}
                 >
-                  <option value="">All statuses</option>
-                  {ORDER_STATUSES.map((s) => (
-                    <option key={s} value={s} className="capitalize">{label(s)}</option>
-                  ))}
-                </select>
-                <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  All statuses
+                </button>
+                {ORDER_STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => handleFilterChange(setStatusFilter)(s)}
+                    className={`glass-pill-option capitalize ${statusFilter === s ? "glass-pill-option-active" : ""}`}
+                  >
+                    {label(s)}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-gray-600">Payment Status</label>
-              <div className="relative">
-                <select
-                  value={paymentFilter}
-                  onChange={(e) => handleFilterChange(setPaymentFilter)(e.target.value)}
-                  className="w-full appearance-none px-3 py-2.5 pr-8 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleFilterChange(setPaymentFilter)("")}
+                  className={`glass-pill-option ${paymentFilter === "" ? "glass-pill-option-active" : ""}`}
                 >
-                  <option value="">All payment statuses</option>
-                  {PAYMENT_STATUSES.map((s) => (
-                    <option key={s} value={s}>{label(s)}</option>
-                  ))}
-                </select>
-                <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  All payment statuses
+                </button>
+                {PAYMENT_STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => handleFilterChange(setPaymentFilter)(s)}
+                    className={`glass-pill-option ${paymentFilter === s ? "glass-pill-option-active" : ""}`}
+                  >
+                    {label(s)}
+                  </button>
+                ))}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-gray-600">From</label>
                 <input
                   type="date"
                   value={startDate}
                   max={endDate || undefined}
                   onChange={(e) => handleFilterChange(setStartDate)(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="glass-input-wrap w-full px-3 py-2.5 rounded-xl text-sm bg-transparent focus:outline-none"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-gray-600">To</label>
                 <input
                   type="date"
                   value={endDate}
                   min={startDate || undefined}
                   onChange={(e) => handleFilterChange(setEndDate)(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="glass-input-wrap w-full px-3 py-2.5 rounded-xl text-sm bg-transparent focus:outline-none"
                 />
               </div>
             </div>
@@ -739,19 +766,20 @@ const Orders = ({ showToast }) => {
               <button
                 onClick={clearFilters}
                 disabled={activeFilterCount === 0}
-                className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="glass-btn-neutral flex-1 py-2.5 rounded-xl text-sm font-semibold text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 Clear
               </button>
               <button
                 onClick={() => setShowFilters(false)}
-                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors"
+                className="glass-shine glass-btn-primary flex-1 py-2.5 text-white rounded-xl text-sm font-semibold transition-all"
               >
                 Apply
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Search results mode ── */}
@@ -759,10 +787,10 @@ const Orders = ({ showToast }) => {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
             {searching ? (
-              [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-[72px] bg-gray-100 rounded-2xl animate-pulse" />)
+              [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="glass-skeleton h-[72px] rounded-2xl" />)
             ) : searchResults.length === 0 ? (
-              <div className="col-span-full flex flex-col items-center py-16 gap-2 bg-white border border-gray-100 rounded-2xl">
-                <PackageSearch size={28} className="text-gray-200" />
+              <div className="glass-card col-span-full flex flex-col items-center py-16 gap-2 rounded-2xl">
+                <PackageSearch size={28} className="text-gray-300" />
                 <p className="text-gray-400 text-sm">No orders match your search</p>
               </div>
             ) : searchResults.map(order => {
@@ -787,7 +815,7 @@ const Orders = ({ showToast }) => {
               <button
                 onClick={() => setSearchPage((p) => Math.max(1, p - 1))}
                 disabled={searchPage === 1}
-                className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-lg text-gray-500 disabled:opacity-40 hover:bg-gray-50"
+                className="glass-btn-neutral px-3 py-1.5 text-xs font-semibold rounded-lg text-gray-500 disabled:opacity-40"
               >
                 Prev
               </button>
@@ -795,7 +823,7 @@ const Orders = ({ showToast }) => {
               <button
                 onClick={() => setSearchPage((p) => Math.min(searchTotalPages, p + 1))}
                 disabled={searchPage === searchTotalPages}
-                className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-lg text-gray-500 disabled:opacity-40 hover:bg-gray-50"
+                className="glass-btn-neutral px-3 py-1.5 text-xs font-semibold rounded-lg text-gray-500 disabled:opacity-40"
               >
                 Next
               </button>
@@ -805,28 +833,28 @@ const Orders = ({ showToast }) => {
       ) : (
         <>
           {/* ── Active / Completed — full-width segmented control on mobile ── */}
-          <div className="flex gap-1 p-1 bg-gray-100 rounded-2xl">
+          <div className="glass-segmented flex gap-1 p-1 rounded-2xl">
             <button
               onClick={() => setView("active")}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
-                ${view === "active" ? "bg-white text-blue-600 shadow-sm" : "text-gray-400"}`}
+                ${view === "active" ? "glass-segment-active text-blue-600" : "text-gray-400"}`}
             >
               <Clock size={14} />
               Active
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold
-                ${view === "active" ? "bg-blue-100 text-blue-600" : "bg-gray-200 text-gray-500"}`}>
+                ${view === "active" ? "bg-blue-100 text-blue-600" : "bg-white/50 text-gray-500"}`}>
                 {activeOrders.length}
               </span>
             </button>
             <button
               onClick={() => setView("completed")}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
-                ${view === "completed" ? "bg-white text-green-600 shadow-sm" : "text-gray-400"}`}
+                ${view === "completed" ? "glass-segment-active text-green-600" : "text-gray-400"}`}
             >
               <CheckCircle size={14} />
               Completed
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold
-                ${view === "completed" ? "bg-green-100 text-green-600" : "bg-gray-200 text-gray-500"}`}>
+                ${view === "completed" ? "bg-green-100 text-green-600" : "bg-white/50 text-gray-500"}`}>
                 {completedOrders.length}
               </span>
             </button>
@@ -843,12 +871,12 @@ const Orders = ({ showToast }) => {
                 key={key}
                 onClick={() => setSourceFilter(key)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all
-                  ${sourceFilter === key ? `${active} shadow-sm` : "bg-white border border-gray-100 text-gray-500 hover:border-gray-200"}`}
+                  ${sourceFilter === key ? `${active} shadow-sm` : "glass-pill-option"}`}
               >
                 {Icon && <Icon size={12} />}
                 {text}
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold
-                  ${sourceFilter === key ? "bg-white/25" : "bg-gray-100 text-gray-500"}`}>
+                  ${sourceFilter === key ? "bg-white/25" : "bg-white/60 text-gray-500"}`}>
                   {count}
                 </span>
               </button>
@@ -858,8 +886,8 @@ const Orders = ({ showToast }) => {
           {/* ── List — responsive grid, collapsible cards ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
             {currentOrders.length === 0 ? (
-              <div className="col-span-full flex flex-col items-center py-16 gap-2 bg-white border border-gray-100 rounded-2xl">
-                <ShoppingBag size={28} className="text-gray-200" />
+              <div className="glass-card col-span-full flex flex-col items-center py-16 gap-2 rounded-2xl">
+                <ShoppingBag size={28} className="text-gray-300" />
                 <p className="text-gray-400 text-sm">
                   {sourceFilter === "all"
                     ? (view === "active" ? "No active orders" : "No completed orders yet")
@@ -881,6 +909,179 @@ const Orders = ({ showToast }) => {
           </div>
         </>
       )}
+
+      <style>{`
+        .glass-card {
+          background: rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,0.8);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          box-shadow: 0 10px 24px -16px rgba(var(--brand),0.25), inset 0 1px 0 rgba(255,255,255,0.85);
+        }
+        .glass-card-editing {
+          border-color: rgba(245,158,11,0.5);
+          box-shadow: 0 0 0 2px rgba(245,158,11,0.25), 0 10px 24px -16px rgba(245,158,11,0.3);
+        }
+        .glass-card-highlighted {
+          border-color: rgba(var(--brand),0.55);
+          box-shadow: 0 0 0 3px rgba(var(--brand),0.28), 0 14px 28px -16px rgba(var(--brand),0.35);
+        }
+
+        .glass-badge {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .glass-modal {
+          background: rgba(255,255,255,0.88);
+          border: 1px solid rgba(255,255,255,0.9);
+          backdrop-filter: blur(22px);
+          -webkit-backdrop-filter: blur(22px);
+          box-shadow: 0 30px 60px -24px rgba(var(--brand),0.4);
+          overflow: hidden;
+        }
+
+        .glass-dropdown {
+          background: rgba(255,255,255,0.88);
+          border: 1px solid rgba(255,255,255,0.9);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          box-shadow: 0 24px 48px -20px rgba(var(--brand),0.35);
+        }
+
+        .glass-notice-amber {
+          background: rgba(255,251,235,0.75);
+          border: 1px solid rgba(252,211,77,0.5);
+        }
+
+        .glass-icon-chip {
+          width: 30px; height: 30px; border-radius: 9px;
+          display: flex; align-items: center; justify-content: center;
+          background: linear-gradient(150deg, rgba(var(--brand),0.20), rgba(var(--brand),0.08));
+          border: 1px solid rgba(255,255,255,0.75);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 6px 14px -8px rgba(var(--brand),0.35);
+        }
+        .glass-icon-btn {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.8);
+        }
+        .glass-icon-btn:hover { background: rgba(255,255,255,0.85); }
+        .glass-icon-btn-sm {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.8);
+        }
+        .glass-icon-btn-sm:hover { background: rgba(255,255,255,0.85); }
+
+        .glass-input-wrap {
+          background: rgba(255,255,255,0.92);
+          border: 1.5px solid rgba(255,255,255,1);
+          box-shadow: 0 0 0 1px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,1), 0 6px 14px -8px rgba(15,23,42,0.18);
+          transition: box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        }
+        .glass-input-wrap:hover {
+          background: rgba(255,255,255,0.97);
+        }
+        .glass-input-wrap:focus-within, .glass-input-wrap:focus {
+          background: #fff;
+          border-color: rgba(var(--brand),0.65);
+          box-shadow: 0 0 0 3.5px rgba(var(--brand),0.16), inset 0 1px 0 rgba(255,255,255,1);
+        }
+        .glass-input-wrap-sm {
+          background: rgba(255,255,255,0.85);
+          border: 1px solid rgba(255,255,255,0.95);
+        }
+
+        .glass-inset-panel {
+          background: rgba(255,255,255,0.5);
+          border: 1px solid rgba(255,255,255,0.7);
+        }
+
+        .glass-segmented {
+          background: rgba(255,255,255,0.4);
+          border: 1px solid rgba(255,255,255,0.6);
+          backdrop-filter: blur(10px);
+        }
+        .glass-segment-active {
+          background: rgba(255,255,255,0.95);
+          box-shadow: 0 4px 10px -4px rgba(15,23,42,0.2);
+        }
+
+        .glass-pill-option {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 8px 16px; border-radius: 999px;
+          font-size: 12px; font-weight: 600;
+          color: rgb(75,85,99);
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.85);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 4px 10px -6px rgba(15,23,42,0.15);
+          transition: all 0.18s ease;
+          white-space: nowrap;
+        }
+        .glass-pill-option:hover {
+          border-color: rgba(var(--brand),0.4);
+          transform: translateY(-1px);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 8px 16px -8px rgba(var(--brand),0.3);
+        }
+        .glass-pill-option-active {
+          color: #fff;
+          background: linear-gradient(135deg, rgba(var(--brand),0.95), rgba(29,78,216,0.95));
+          border-color: rgba(255,255,255,0.4);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 10px 20px -10px rgba(var(--brand),0.55);
+        }
+
+        .glass-btn-primary {
+          background: linear-gradient(135deg, rgba(var(--brand),0.95), rgba(29,78,216,0.95));
+          border: 1px solid rgba(255,255,255,0.3);
+          box-shadow: 0 10px 22px -12px rgba(var(--brand),0.5);
+        }
+        .glass-btn-primary:hover:not(:disabled) { box-shadow: 0 14px 26px -12px rgba(var(--brand),0.6); }
+        .glass-btn-neutral {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.8);
+        }
+        .glass-btn-neutral:hover { background: rgba(255,255,255,0.8); }
+
+        .glass-btn-danger-soft {
+          background: rgba(254,242,242,0.85);
+          border: 1px solid rgba(252,165,165,0.6);
+          color: rgb(220,38,38);
+        }
+        .glass-btn-danger-soft:hover:not(:disabled) {
+          background: rgba(254,226,226,0.95);
+          border-color: rgba(248,113,113,0.7);
+        }
+
+        .glass-shine { position: relative; overflow: hidden; isolation: isolate; }
+        .glass-shine::after {
+          content: ""; position: absolute; top: 0; left: -60%;
+          width: 40%; height: 100%;
+          background: linear-gradient(115deg, transparent, rgba(255,255,255,0.5), transparent);
+          transform: skewX(-18deg);
+          transition: left 0.75s ease;
+          pointer-events: none;
+        }
+        .glass-shine:hover::after { left: 130%; }
+
+        .glass-blob {
+          filter: blur(70px); opacity: 0.14;
+          background: radial-gradient(circle at 40% 30%, rgba(var(--brand),0.5), rgba(var(--brand),0));
+          animation: drift1 17s ease-in-out infinite;
+        }
+        .glass-blob-2 { animation: drift2 14s ease-in-out infinite; opacity: 0.1; }
+        @keyframes drift1 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(-18px, 16px) scale(1.06); }
+        }
+        @keyframes drift2 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(16px, -14px) scale(1.05); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .glass-blob, .glass-blob-2 { animation: none !important; }
+        }
+      `}</style>
     </div>
   );
 };

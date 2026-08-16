@@ -40,12 +40,12 @@ const Uniform = () => {
   }, [products, activeTab]);
 
   const SkeletonCard = () => (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
-      <div className="h-52 bg-gray-200" />
+    <div className="glass-card rounded-2xl overflow-hidden animate-pulse">
+      <div className="h-52 bg-white/40" />
       <div className="p-4 space-y-2">
-        <div className="h-4 bg-gray-200 rounded w-3/4" />
-        <div className="h-4 bg-gray-100 rounded w-1/3" />
-        <div className="h-8 bg-gray-100 rounded-xl mt-3" />
+        <div className="h-4 bg-white/50 rounded w-3/4" />
+        <div className="h-4 bg-white/35 rounded w-1/3" />
+        <div className="h-8 bg-white/35 rounded-xl mt-3" />
       </div>
     </div>
   );
@@ -61,11 +61,11 @@ const Uniform = () => {
     return (
       <div
         onClick={() => !isOutOfStock && navigate(`/products/${product._id}`)}
-        className={`bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm transition-all duration-200 group
-          ${isOutOfStock ? "opacity-60 cursor-not-allowed" : "hover:shadow-md hover:border-blue-200 cursor-pointer"}`}
+        className={`glass-card glass-shine rounded-2xl overflow-hidden transition-all duration-200 group
+          ${isOutOfStock ? "opacity-60 cursor-not-allowed" : "hover:-translate-y-1 cursor-pointer"}`}
       >
         {/* Image */}
-        <div className="relative h-48 sm:h-52 overflow-hidden bg-gray-100">
+        <div className="relative h-48 sm:h-52 overflow-hidden bg-white/40">
           {product.images?.[0] ? (
             <img
               src={product.images[0]}
@@ -74,28 +74,28 @@ const Uniform = () => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <ShoppingBag size={32} className="text-gray-300" />
+              <ShoppingBag size={32} className="text-blue-200" />
             </div>
           )}
 
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-              <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center">
+              <span className="bg-red-500/90 text-white text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm">
                 Out of Stock
               </span>
             </div>
           )}
 
-          {/* Set badge */}
+          {/* Set badge → glass pill */}
           {isSet && (
-            <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm flex items-center gap-1">
+            <div className="glass-pill-dark absolute top-2 left-2 text-white text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
               <Layers size={11} />
               Set
             </div>
           )}
 
           {!isOutOfStock && product.sizes?.length > 0 && (
-            <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-semibold px-2 py-1 rounded-lg shadow-sm">
+            <div className="glass-pill-light absolute bottom-2 left-2 text-gray-700 text-xs font-semibold px-2.5 py-1 rounded-lg">
               {product.sizes.length} size{product.sizes.length > 1 ? "s" : ""}
             </div>
           )}
@@ -107,7 +107,7 @@ const Uniform = () => {
             {product.name}
           </h3>
 
-          <div className="flex items-center gap-1 text-blue-600">
+          <div className="flex items-center gap-1 text-blue-700">
             <Tag size={12} />
             <span className="text-sm font-black">
               {minPrice !== null ? `₹${minPrice}` : "—"}
@@ -123,7 +123,7 @@ const Uniform = () => {
               if (!isOutOfStock) navigate(`/products/${product._id}`);
             }}
             disabled={isOutOfStock}
-            className="w-full flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white text-xs font-semibold py-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="glass-view-btn w-full flex items-center justify-center gap-1.5 text-blue-700 text-xs font-semibold py-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShoppingBag size={13} />
             View Product
@@ -140,14 +140,22 @@ const Uniform = () => {
   ];
 
   return (
-    <section id="uniform" className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+    <section
+      id="uniform"
+      className="relative max-w-7xl mx-auto px-4 sm:px-6 py-14 overflow-hidden"
+      style={{ "--brand": "37,99,235" /* blue-600 */, "--brand-2": "245,158,11" /* amber-500 */ }}
+    >
+      {/* Ambient glass blobs — quiet, brand colors unchanged */}
+      <div className="glass-blob glass-blob--1 absolute -top-16 -right-16 w-80 h-80 rounded-full pointer-events-none" />
+      <div className="glass-blob glass-blob--2 absolute bottom-0 -left-16 w-72 h-72 rounded-full pointer-events-none" />
 
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+      <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div className="space-y-1">
-          <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest">
+          <div className="glass-pill inline-flex items-center gap-2 text-blue-700 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-1">
+            <span className="glass-dot w-1.5 h-1.5 rounded-full" />
             Collection
-          </p>
+          </div>
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900">
             School Uniforms
           </h2>
@@ -165,24 +173,22 @@ const Uniform = () => {
         </button>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs → glass pill tabs */}
       {!loading && products.length > 0 && (
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-1">
+        <div className="relative flex gap-2 mb-8 overflow-x-auto pb-1">
           {tabs.map(({ key, label, icon: Icon, count }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors shrink-0
-                ${activeTab === key
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200 shrink-0
+                ${activeTab === key ? "glass-tab-active text-white" : "glass-tab text-gray-600"
                 }`}
             >
               <Icon size={14} />
               {label}
               <span
                 className={`text-xs px-1.5 py-0.5 rounded-md ${
-                  activeTab === key ? "bg-white/20" : "bg-white text-gray-500"
+                  activeTab === key ? "bg-white/25" : "bg-white/70 text-gray-500"
                 }`}
               >
                 {count}
@@ -192,21 +198,23 @@ const Uniform = () => {
         </div>
       )}
 
-      {/* Error */}
+      {/* Error → glass */}
       {error && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6">
+        <div className="relative glass-card flex items-center gap-2 text-red-600 px-4 py-3 rounded-xl text-sm mb-6 border-red-200/70">
           <AlertCircle size={16} />
           {error}
         </div>
       )}
 
       {/* Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div className="relative grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
         ) : filteredProducts.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-16 gap-3">
-            <ShoppingBag size={40} className="text-gray-200" />
+            <span className="glass-icon-chip flex items-center justify-center w-16 h-16 rounded-full">
+              <ShoppingBag size={28} className="text-blue-400" />
+            </span>
             <p className="text-gray-400 text-sm font-medium">
               {activeTab === "sets"
                 ? "No uniform sets available right now"
@@ -222,7 +230,7 @@ const Uniform = () => {
 
       {/* Mobile view all */}
       {!loading && products.length > 0 && (
-        <div className="sm:hidden mt-6 text-center">
+        <div className="relative sm:hidden mt-6 text-center">
           <button
             onClick={() => navigate("/products?category=uniform")}
             className="flex items-center gap-1.5 mx-auto text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
@@ -233,6 +241,122 @@ const Uniform = () => {
         </div>
       )}
 
+      <style>{`
+        /* ── Liquid glass core surface ── */
+        .glass-card {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.75);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          box-shadow: 0 10px 26px -14px rgba(var(--brand),0.28),
+                      inset 0 1px 0 rgba(255,255,255,0.85);
+        }
+        .glass-card.hover\\:-translate-y-1:hover {
+          box-shadow: 0 18px 34px -16px rgba(var(--brand),0.38),
+                      inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+
+        .glass-pill {
+          background: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.8);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          box-shadow: 0 8px 18px -10px rgba(var(--brand),0.3),
+                      inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+        .glass-dot { background: rgb(var(--brand)); }
+
+        .glass-icon-chip {
+          background: linear-gradient(150deg, rgba(var(--brand),0.18), rgba(var(--brand),0.06));
+          border: 1px solid rgba(255,255,255,0.75);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 6px 14px -8px rgba(var(--brand),0.3);
+        }
+
+        /* Badges on product image — dark glass for the "Set" tag, light glass for size count */
+        .glass-pill-dark {
+          background: rgba(29,78,216,0.75);
+          border: 1px solid rgba(255,255,255,0.3);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          box-shadow: 0 6px 14px -8px rgba(15,23,42,0.4);
+        }
+        .glass-pill-light {
+          background: rgba(255,255,255,0.75);
+          border: 1px solid rgba(255,255,255,0.85);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          box-shadow: 0 6px 14px -8px rgba(15,23,42,0.2);
+        }
+
+        /* Tabs */
+        .glass-tab {
+          background: rgba(255,255,255,0.5);
+          border: 1px solid rgba(255,255,255,0.7);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
+        .glass-tab:hover {
+          background: rgba(255,255,255,0.75);
+        }
+        .glass-tab-active {
+          background: linear-gradient(135deg, rgba(37,99,235,0.92), rgba(29,78,216,0.95));
+          border: 1px solid rgba(255,255,255,0.35);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          box-shadow: 0 10px 20px -10px rgba(var(--brand),0.5),
+                      inset 0 1px 0 rgba(255,255,255,0.35);
+        }
+
+        /* View product button */
+        .glass-view-btn {
+          background: rgba(37,99,235,0.1);
+          border: 1px solid rgba(37,99,235,0.18);
+        }
+        .glass-view-btn:hover:not(:disabled) {
+          background: rgba(37,99,235,0.95);
+          color: #fff;
+          border-color: rgba(37,99,235,0.95);
+        }
+
+        /* ── Shine sweep ── */
+        .glass-shine { position: relative; overflow: hidden; isolation: isolate; }
+        .glass-shine::after {
+          content: ""; position: absolute; top: 0; left: -60%;
+          width: 40%; height: 100%;
+          background: linear-gradient(115deg, transparent, rgba(255,255,255,0.55), transparent);
+          transform: skewX(-18deg);
+          transition: left 0.75s ease;
+          pointer-events: none;
+        }
+        .glass-shine:hover::after { left: 130%; }
+
+        /* ── Ambient background blobs ── */
+        .glass-blob { filter: blur(60px); opacity: 0.35; }
+        .glass-blob--1 {
+          background: radial-gradient(circle at 30% 30%, rgba(var(--brand),0.3), rgba(var(--brand),0));
+          animation: drift1 16s ease-in-out infinite;
+        }
+        .glass-blob--2 {
+          background: radial-gradient(circle at 60% 40%, rgba(var(--brand-2),0.22), rgba(var(--brand-2),0));
+          animation: drift2 14s ease-in-out infinite;
+        }
+        @keyframes drift1 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(-18px, 20px) scale(1.06); }
+        }
+        @keyframes drift2 {
+          0%, 100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(16px, -16px) scale(1.05); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .glass-blob--1, .glass-blob--2 {
+            animation: none !important;
+          }
+        }
+      `}</style>
     </section>
   );
 };
